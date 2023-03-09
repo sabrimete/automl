@@ -38,6 +38,14 @@ def parse_args():
                         type=int
                     )
 
+    parser.add_argument('--path', '--p',
+                        metavar='', 
+                        #required=True,
+                        default='data/processed/train.csv',
+                        help='Path of train dataset', 
+                        type=str
+                    )
+
     return parser.parse_args()
 
 
@@ -71,7 +79,7 @@ def main():
     print(f"Tracking uri: {mlflow.get_tracking_uri()}")
 
     # Import data directly as H2O frame (default location is data/processed)
-    main_frame = h2o.import_file(path='data/processed/train.csv')
+    main_frame = h2o.import_file(path=args.path)
 
     # Save column data types of H2O frame (for matching with test set during prediction)
     with open('data/processed/train_col_types.json', 'w') as fp:
