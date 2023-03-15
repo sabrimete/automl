@@ -16,8 +16,8 @@ st.title('CMPE492AutoML Project')
 
 # Set FastAPI endpoint
 # endpoint = 'http://localhost:8000/predict'
-predict_endpoint = 'http://host.docker.internal:8000/predict' # Specify this path for Dockerization to work
-train_endpoint = 'http://host.docker.internal:8000/train'
+predict_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/predict' # Specify this path for Dockerization to work
+train_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/train'
 
 
 st.subheader('Train Dataset')
