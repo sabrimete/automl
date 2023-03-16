@@ -17,6 +17,7 @@ import random
 from fastapi import FastAPI, File
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, HTMLResponse
+from pathlib import Path
 
 import mlflow
 import mlflow.h2o
@@ -134,6 +135,12 @@ async def train(file: bytes = File(...)):
         mlflow.h2o.log_model(aml.leader, artifact_path="model")
         
         model_uri = mlflow.get_artifact_uri("model")
+
+        models_dir = Path(...)
+        model_file_path = models_dir / "model.pickle"
+        ... # here we store the model
+        # Upload any files to storage bucket
+        mv = mlflow.register_model(model_file_path, "somemodel")
         print(f'AutoML best model saved in {model_uri}')
         
         # Get IDs of current experiment run
