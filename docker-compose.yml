@@ -13,7 +13,7 @@ services:
       - project_network
 
   frontend:
-    build: frontend2
+    build: frontend
     image: e2e-automl-frontend:latest
     ports:
       - "80:80"
