@@ -34,8 +34,11 @@ async def predict(request: Request):
     return output
 
 @app.post("/train")
-async def train(trainString: str = Form(...), file: bytes = File(...)):
-    file_obj = io.BytesIO(file)
+async def train(request: Request):
+    form_data = await request.form()
+    file = form_data["file"].file
+    trainString = form_data["targetString"]
+    file_obj = io.BytesIO(file.read())
     train_df = pd.read_csv(file_obj)
     main_frame = h2o.H2OFrame(train_df)
 
