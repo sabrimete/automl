@@ -1,23 +1,16 @@
-# Set base image
-FROM python:3.9
+# Use a lightweight nginx base image
+FROM nginx:alpine
 
 # Set working directory
-WORKDIR /app
+WORKDIR /usr/share/nginx/html
 
-# Copy list of frontend requirements
-COPY requirements-frontend.txt requirements.txt
+# Copy the frontend code into the container
+COPY index.html .
+COPY style.css .
+COPY app.js .
 
-# Install dependencies
-RUN pip install -r requirements.txt
+# Expose port 80
+EXPOSE 80
 
-# Copy files to working directory (into a newly created /app directory)
-COPY . /app
-
-# Expose port
-EXPOSE 8501
-
-# Execute command when container starts
-CMD ["streamlit", "run", "app.py"]
-
-# To build this Docker image for frontend subdir, run the following (from main directory)
-# docker build -t <app-name e.g. streamlitui>:latest -f frontend/Dockerfile frontend/
+# Start the nginx server
+CMD ["nginx", "-g", "daemon off;"]
