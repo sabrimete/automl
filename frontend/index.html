@@ -20,13 +20,11 @@
         <button onclick="uploadTrainFile()">Upload Train File</button>
         <div id="trainStatus"></div>
     </div>
-
+    <pre id="jsonLeaderboard"></pre>
     <div>
         <h3>Upload Predict File</h3>
         <input type="file" id="predictFile" onchange="updatePredictFileLabel()">
         <label id="predictFileLabel">Choose file...</label>
-        <br>
-        <input type="text" id="predictString" placeholder="Enter string column">
         <br>
         <button onclick="uploadPredictFile()">Upload Predict File</button>
         <div id="predictStatus"></div>

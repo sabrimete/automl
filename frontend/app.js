@@ -1,9 +1,8 @@
-const predict_endpoint = 'http://0.0.0.0:8000/predict';
-const train_endpoint = 'http://0.0.0.0:8000/train';
-// const predict_endpoint = 'http://backend:8000/predict';
-// const train_endpoint = 'http://backend:8000/train';
-// predict_endpoint = 'http://host.docker.internal:8000/predict' 
-// train_endpoint = 'http://host.docker.internal:8000/train'
+// const predict_endpoint = 'http://0.0.0.0:8000/predict';
+// const train_endpoint = 'http://0.0.0.0:8000/train';
+
+predict_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/predict' 
+train_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/train'
 function uploadTrainFile() {
     const input = document.getElementById("trainFile");
     const file = input.files[0];
@@ -21,37 +20,36 @@ function uploadTrainFile() {
     showTrainStatus('Uploading train file...');
 
     fetch(train_endpoint, {
-        method: 'POST',
-        body: formData
+    method: 'POST',
+    body: formData
     })
     .then(response => {
         hideTrainStatus();
         if (response.ok) {
-            console.log("Train file uploaded successfully.");
+            return response.text(); // Return the response text here
         } else {
             console.error("Error uploading train file.");
         }
+    })
+    .then(text => {
+        const jsonObject = JSON.parse(text);
+        const prettyJsonString = JSON.stringify(jsonObject, null, 4);
+        console.log(prettyJsonString);
+        document.getElementById('jsonLeaderboard').textContent = prettyJsonString;
     })
     .catch(error => {
         hideTrainStatus();
         console.error(error);
     });
-}
-
+    }
 
 function uploadPredictFile() {
     const input = document.getElementById("predictFile");
-    const file = input.files[0];
-    const predictString = document.getElementById("predictString").value;
 
-    if (predictString == '') {
-        alert('Please enter the name of the string column.');
-        return;
-    }
+    const file = input.files[0];
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("predictString", predictString);
 
     showPredictStatus('Uploading predict file...');
 
