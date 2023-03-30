@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AutoML Pipeline</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script type="text/javascript" src="app.js"></script>
+    </head>
+<body>
+    <h2>AutoML Pipeline</h2>
+
+    <div>
+        <h3>Upload Train File</h3>
+        <input type="file" id="trainFile" onchange="updateTrainFileLabel()">
+        <label id="trainFileLabel">Choose file...</label>
+        <br>
+        <input type="text" id="targetString" placeholder="Enter target column">
+        <br>
+        <button onclick="uploadTrainFile()">Upload Train File</button>
+        <div id="trainStatus"></div>
+    </div>
+    <pre id="jsonLeaderboard"></pre>
+    <div>
+        <h3>Upload Predict File</h3>
+        <input type="file" id="predictFile" onchange="updatePredictFileLabel()">
+        <label id="predictFileLabel">Choose file...</label>
+        <br>
+        <button onclick="uploadPredictFile()">Upload Predict File</button>
+        <div id="predictStatus"></div>
+    </div>
+
+</body>
+</html>

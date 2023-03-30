@@ -14,10 +14,10 @@ from h2o.automl import H2OAutoML, get_leaderboard
 import json
 import random
 
-from fastapi import FastAPI, File
+from fastapi import FastAPI, File, Form, UploadFile, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, HTMLResponse
-from pathlib import Path
+from fastapi.middleware.cors import CORSMiddleware
 
 import mlflow
 import mlflow.h2o
@@ -31,27 +31,41 @@ from sklearn.metrics import accuracy_score
 # Create FastAPI instance
 app = FastAPI()
 
+origins = ["*"]  # Replace * with your specific domain if you don't want to allow all domains
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Initiate H2O instance and MLflow client
 h2o.init()
-client = MlflowClient()
+TRACKING_SERVER_HOST = "https://mlflow-server-6r72er7ega-uc.a.run.app" # fill in with the external IP of the compute engine instance
+mlflow.set_tracking_uri(TRACKING_SERVER_HOST)
+client = MlflowClient(TRACKING_SERVER_HOST)
 
 
 # Create POST endpoint with path '/predict'
 @app.post("/predict")
-async def predict(file: bytes = File(...)):
+async def predict(request: Request):
+    form_data = await request.form()
+    file = form_data["file"].file.read()
     # Load best model (based on logloss) amongst all experiment runs
-    all_exps = [exp.experiment_id for exp in client.list_experiments()]
+    all_exps = [exp.experiment_id for exp in client.search_experiments()]
     runs = mlflow.search_runs(experiment_ids=all_exps, run_view_type=ViewType.ALL)
     # run_id, exp_id = runs.loc[runs['metrics.log_loss'].idxmax()]['run_id'], runs.loc[runs['metrics.log_loss'].idxmax()]['experiment_id']
-    run_id, exp_id = runs.loc[0]['run_id'], runs.loc[0]['experiment_id']
+    run_id, exp_id, artifact_uri = runs.loc[0]['run_id'], runs.loc[0]['experiment_id'], runs.loc[0]['artifact_uri']
     print(f'Loading best model: Run {run_id} of Experiment {exp_id}')
-    best_model = mlflow.h2o.load_model(f"mlruns/{exp_id}/{run_id}/artifacts/model/")
+
+    best_model = mlflow.h2o.load_model(artifact_uri+"/model")
 
     print('[+] Initiate Prediction')
     file_obj = io.BytesIO(file)
     test_df = pd.read_csv(file_obj)
     test_h2o = h2o.H2OFrame(test_df)
-    y_train = test_df['Response']
+
     # Separate ID column (if any)
     id_name, X_id, X_h2o = separate_id_col(test_h2o)
 
@@ -72,11 +86,14 @@ async def predict(file: bytes = File(...)):
     # Convert predictions into JSON format
     json_compatible_item_data = jsonable_encoder(preds_final)
     output = JSONResponse(content=json_compatible_item_data) 
-    accuracy = accuracy_score(y_train, preds_final)
-    return output, accuracy
+    print(output)
+    return output
 
 @app.post("/train")
-async def train(file: bytes = File(...)):
+async def train(request: Request):
+    form_data = await request.form()
+    file = form_data["file"].file.read()
+    trainString = form_data["targetString"]
 
     # Get parsed experiment name
     experiment_name = 'deneme' + str(random.randint(1, 1000000))
@@ -107,7 +124,7 @@ async def train(file: bytes = File(...)):
     #     json.dump(main_frame.types, fp)
 
     # Set predictor and target columns
-    target = 'Response'
+    target = trainString
     predictors = [n for n in main_frame.col_names if n != target]
 
     # Factorize target variable so that autoML tackles classification problem
@@ -136,25 +153,20 @@ async def train(file: bytes = File(...)):
         
         model_uri = mlflow.get_artifact_uri("model")
 
-        models_dir = Path(...)
-        model_file_path = models_dir / "model.pickle"
-        ... # here we store the model
-        # Upload any files to storage bucket
-        mv = mlflow.register_model(model_file_path, "somemodel")
         print(f'AutoML best model saved in {model_uri}')
         
         # Get IDs of current experiment run
-        exp_id = experiment.experiment_id
-        run_id = mlflow.active_run().info.run_id
+        # exp_id = experiment.experiment_id
+        # run_id = mlflow.active_run().info.run_id
         
-        # Save leaderboard as CSV
-        lb = get_leaderboard(aml, extra_columns='ALL')
-        lb_path = f'mlruns/{exp_id}/{run_id}/artifacts/model/leaderboard.csv'
-        lb.as_data_frame().to_csv(lb_path, index=False) 
-        print(f'AutoML Complete. Leaderboard saved in {lb_path}')
-        print()
-        print(aml.leaderboard.as_data_frame())
-        print(type(aml.leaderboard.as_data_frame()))
+        # # Save leaderboard as CSV
+        # lb = get_leaderboard(aml, extra_columns='ALL')
+        # lb_path = f'mlruns/{exp_id}/{run_id}/artifacts/model/leaderboard.csv'
+        # lb.as_data_frame().to_csv(lb_path, index=False) 
+        # print(f'AutoML Complete. Leaderboard saved in {lb_path}')
+        # print()
+        # print(aml.leaderboard.as_data_frame())
+        # print(type(aml.leaderboard.as_data_frame()))
         return aml.leaderboard.as_data_frame()
 
 @app.get("/")
