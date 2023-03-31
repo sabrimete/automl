@@ -27,7 +27,7 @@ h3 {
 }
 
 .container {
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
   padding: 30px;
   background-color: #FFFFFF;
@@ -123,3 +123,22 @@ h3 {
   margin-right: 16px;
 }
 
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+tbody tr:nth-child(even) {
+  background-color: #f8f8f8;
+}
+tbody tr:hover {
+  background-color: #eaeaea;
+}
