@@ -1,6 +1,7 @@
-const predict_endpoint = 'http://0.0.0.0:8000/predict';
-const train_endpoint = 'http://0.0.0.0:8000/train';
-const save_endpoint = "http://0.0.0.0:8000/save_models"
+
+const predict_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/predict';  //'http://0.0.0.0:8000/predict';
+const train_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/train'; //'http://0.0.0.0:8000/train';
+const save_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/save_models'; //"http://0.0.0.0:8000/save_models"
 
 // predict_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/predict' 
 // train_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/train'
@@ -54,7 +55,6 @@ function uploadTrainFile() {
     .then(text => {
         displayLeaderboard(text, max_models);
     })
-
     .catch(error => {
         hideTrainStatus();
         console.error(error);
@@ -196,7 +196,7 @@ function displayLeaderboard(jsonText, model_num) {
     container.innerHTML = "";
     container.appendChild(leaderboard);
     container.appendChild(saveButton); // Append the save button after the table
-  }
+  
 
   
   function saveSelectedModels(table, saveButton) {
@@ -247,71 +247,4 @@ function displayLeaderboard(jsonText, model_num) {
         console.error(error);
     });
   }
-  
-  
-  
-  
-// function displayLeaderboard(jsonText, model_num) {
-//     var jsonObject = JSON.parse(jsonText);
-//     var jsonObject = JSON.parse(jsonObject);
-//     const leaderboard = document.createElement("table");
-//     const header = leaderboard.createTHead();
-//     const headerRow = header.insertRow();
-  
-//     const columns = [
-//       "model_id",
-//       "rmse",
-//       "mse",
-//       "mae",
-//       "rmsle",
-//       "mean_residual_deviance",
-//     ];
-  
-//     columns.forEach((column) => {
-//       const headerCell = document.createElement("th");
-//       headerCell.textContent = column;
-//       headerRow.appendChild(headerCell);
-//     });
-  
-//     const tbody = document.createElement("tbody");
-//     leaderboard.appendChild(tbody);
-  
-//     const numRows = Object.keys(jsonObject["model_id"]).length;
-  
-//     for (let i = 0; i < numRows; i++) {
-//       const row = tbody.insertRow();
-//       columns.forEach((column) => {
-//         const cell = row.insertCell();
-//         const key = column.replace(" ", "_").toLowerCase();
-//         if (jsonObject[key] && jsonObject[key][i.toString()]) {
-//           if (key === "model_id") {
-//             cell.textContent = jsonObject[key][i.toString()];
-//           } else {
-//             cell.textContent = parseFloat(jsonObject[key][i.toString()]).toFixed(4);
-//           }
-//         } else {
-//           cell.textContent = "";
-//         }
-//       });
-//     }
-  
-//     const container = document.getElementById("jsonLeaderboard");
-//     container.innerHTML = "";
-//     container.appendChild(leaderboard);
-//   }
-
-//   function saveSelectedModels() {
-//     const table = document.getElementById("leaderboard");
-//     const checkboxes = table.querySelectorAll("input[type='checkbox']");
-//     const selectedModelIds = [];
-  
-//     checkboxes.forEach((checkbox) => {
-//       if (checkbox.checked) {
-//         selectedModelIds.push(checkbox.value);
-//       }
-//     });
-  
-//     // Send the selectedModelIds to your server or use it as needed
-//     console.log("Selected Model IDs: ", selectedModelIds);
-//   }
-  
+}

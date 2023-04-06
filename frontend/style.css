@@ -27,7 +27,11 @@ h3 {
 }
 
 .container {
+<<<<<<< HEAD
   max-width: 800px;
+=======
+  max-width: 600px;
+>>>>>>> mlflow-seperate
   margin: 0 auto;
   padding: 30px;
   background-color: #FFFFFF;
@@ -122,7 +126,6 @@ h3 {
   animation: spin 1s linear infinite;
   margin-right: 16px;
 }
-
 table {
   border-collapse: collapse;
   width: 100%;

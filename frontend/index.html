@@ -15,6 +15,7 @@
         <input type="file" id="trainFile" onchange="updateTrainFileLabel()">
         <label id="trainFileLabel">Choose file...</label>
         <br>
+
         <input type="text" id="target_string" placeholder="Enter Target Column(*)">
         <br>
         <input type="number" id="max_runtime_secs" placeholder="Max Runtime" min="0">
@@ -36,8 +37,6 @@
         <button onclick="uploadTrainFile()">Upload Train File</button>
         <br>
         <div id="trainStatus"></div>
-        
-
     </div>
     <pre id="jsonLeaderboard"></pre>
     <div>
@@ -51,3 +50,4 @@
 
 </body>
 </html>
+
