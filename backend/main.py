@@ -104,7 +104,7 @@ async def predict(request: Request):
     print(output)
     return output
 
-@app.post("/supervised-train")
+@app.post("/train")
 async def train(request: Request):
     form_data = await request.form()
     file = form_data["file"].file
@@ -156,47 +156,136 @@ async def train(request: Request):
 async def train(request: Request):
     form_data = await request.form()
     file = form_data["file"].file
-    max_runtime_secs = int(form_data.get("max_runtime_secs") or 300)
-    max_models = int(form_data.get("max_models") or 6)
-    # if(max_models == 1):
-    #     max_models = 2
-    nfolds = int(form_data.get("nfolds") or 5)
-    seed = int(form_data.get("seed") or 42)
-    include_algos = form_data.get("include_algos")
-    print(include_algos)
-    if include_algos:
-        include_algos = json.loads(include_algos)
-    else:
-        include_algos = None
-    print("PARAMS ", max_runtime_secs, max_models, nfolds, seed, include_algos)
+    algo = form_data.get("algo")
+    predictors = [col for col in file.col_names]
+    if algo == "kmeans":
+        kmeans = h2o.estimators.H2OKMeansEstimator(
+            k=int(form_data.get("number_of_clusters") or 5),          # number of clusters
+            standardize=True,  # standardize the data before clustering
+            seed = int(form_data.get("seed") or 42)      # set the seed for reproducibility
+        )
+        kmeans.train(x=predictors, training_frame=file)
+    elif algo == "iforest":
+        iforest = h2o.estimators.H2OIsolationForestEstimator(
+            ntrees=int(form_data.get("ntrees") or 100),          # number of trees in the forest
+            max_depth=int(form_data.get("max_depth") or 20),        # maximum depth of each tree
+            sample_size=int(form_data.get("sample_size") or 256),     # size of the sample used to train each tree
+            seed=int(form_data.get("seed") or 42)           # set the seed for reproducibility
+        )
+        iforest.train(x=predictors, training_frame=file)
 
-    file_obj = io.BytesIO(file.read())
-    train_df = pd.read_csv(file_obj)
-    main_frame = h2o.H2OFrame(train_df)
+    experiment_name = 'deneme' + str(random.randint(1, 1000000))
+    try:
+        experiment_id = mlflow.create_experiment(experiment_name)
+        experiment = client.get_experiment_by_name(experiment_name)
+    except:
+        experiment = client.get_experiment_by_name(experiment_name)
 
-    x = [n for n in main_frame.col_names if n != y]
+    mlflow.set_experiment(experiment_name)
 
+    # Print experiment details
+    print(f"Name: {experiment_name}")
+    print(f"Experiment_id: {experiment.experiment_id}")
+    print(f"Artifact Location: {experiment.artifact_location}")
+    print(f"Lifecycle_stage: {experiment.lifecycle_stage}")
+    print(f"Tracking uri: {mlflow.get_tracking_uri()}")
+
+
+    with mlflow.start_run():
+        if algo == "kmeans":
+            model = h2o.get_model(kmeans.model_id)
+        elif algo == "iforest":
+            model = h2o.get_model(iforest.model_id)
+        # Log and save best model (mlflow.h2o provides API for logging & loading H2O models)
+        mlflow.h2o.log_model(model, artifact_path='model')
+        model_uri = mlflow.get_artifact_uri('model')
+        print(f'model saved in {model_uri}')
     
-    aml = H2OAutoML(
-        max_runtime_secs=max_runtime_secs,
-        max_models=max_models,
-        nfolds=nfolds,
-        seed=seed,
-        include_algos=include_algos
-    )
-    aml.train(x=x, training_frame=main_frame)
+    return {"message": model_uri}
 
+
+@app.post("/dev-supervised-train")
+async def train(request: Request):
+    form_data = await request.form()
+    file = form_data["file"].file
+    algo = form_data.get("algo")
+    response = form_data.get("response")
+    predictors = [col for col in file.col_names if col != response]
+
+    # Split the data into training and validation sets
+    train, valid = file.split_frame(ratios=[0.7], seed=1234)
+
+    if algo == "gbm":
+        gbm = h2o.estimators.H2OGradientBoostingEstimator(
+            ntrees=int(form_data.get("ntrees") or 100),          # number of trees in the forest
+            max_depth=int(form_data.get("max_depth") or 20),         # maximum depth of each tree
+            learn_rate=float(form_data.get("learn_rate") or 0.1),      # learning rate of the algorithm
+            seed=int(form_data.get("seed") or 42)                # set the seed for reproducibility
+        )
+        gbm.train(x=predictors, y=response, training_frame=train, validation_frame=valid)
+    elif algo == "glm":
+        # Create a GLM model
+        glm = h2o.estimators.H2OGeneralizedLinearEstimator(
+            family=str(form_data.get("family") or "binomial"),   # use binomial family for binary classification
+            alpha=float(form_data.get("alpha") or 0.5),           # specify the alpha regularization parameter
+            lambda_=float(form_data.get("lambda") or 1e-5),        # specify the lambda regularization parameter
+            seed=int(form_data.get("seed") or 42)            # set the seed for reproducibility
+        )
+        # Train the GLM model on the training set
+        glm.train(x=predictors, y=response, training_frame=train, validation_frame=valid)
+    elif algo == "xgb":
+        # Create an XGBoost model
+        xgb = h2o.estimators.H2OXGBoostEstimator(
+            ntrees=int(form_data.get("ntrees") or 100),          # number of trees in the forest
+            max_depth=int(form_data.get("max_depth") or 5),         # maximum depth of each tree
+            learn_rate=float(form_data.get("learn_rate") or 0.1),      # learning rate of the algorithm
+            seed=int(form_data.get("seed") or 42)         # set the seed for reproducibility
+        )
+        # Train the XGBoost model on the training set
+        xgb.train(x=predictors, y=response, training_frame=train, validation_frame=valid)
+    elif algo == "rf":
+        # Create a Random Forest model
+        rf = h2o.estimators.H2ORandomForestEstimator(
+            ntrees=int(form_data.get("ntrees") or 100),          # number of trees in the forest
+            max_depth=int(form_data.get("max_depth") or 5),         # maximum depth of each tree
+            min_rows=int(form_data.get("min_rows") or 10),         # maximum depth of each tree      # specify the minimum number of rows in each leaf node
+            seed=int(form_data.get("seed") or 42)         # set the seed for reproducibility
+        )
+        # Train the Random Forest model on the training set
+        rf.train(x=predictors, y=response, training_frame=train, validation_frame=valid)
+
+    experiment_name = 'deneme' + str(random.randint(1, 1000000))
+    try:
+        experiment_id = mlflow.create_experiment(experiment_name)
+        experiment = client.get_experiment_by_name(experiment_name)
+    except:
+        experiment = client.get_experiment_by_name(experiment_name)
+
+    mlflow.set_experiment(experiment_name)
+
+    # Print experiment details
+    print(f"Name: {experiment_name}")
+    print(f"Experiment_id: {experiment.experiment_id}")
+    print(f"Artifact Location: {experiment.artifact_location}")
+    print(f"Lifecycle_stage: {experiment.lifecycle_stage}")
+    print(f"Tracking uri: {mlflow.get_tracking_uri()}")
+
+
+    with mlflow.start_run():
+        if algo == "gbm":
+            model = h2o.get_model(gbm.model_id)
+        elif algo == "glm":
+            model = h2o.get_model(glm.model_id)
+        elif algo == "xgb":
+            model = xgb.get_model(xgb.model_id)
+        elif algo == "rf":
+            model = h2o.get_model(rf.model_id)
+        # Log and save best model (mlflow.h2o provides API for logging & loading H2O models)
+        mlflow.h2o.log_model(model, artifact_path='model')
+        model_uri = mlflow.get_artifact_uri('model')
+        print(f'model saved in {model_uri}')
     
-
-    lb = aml.leaderboard
-    global global_leaderboard
-    global_leaderboard = aml.leaderboard
-    lb.head(rows=lb.nrows)
-
-    response =  aml.leaderboard.as_data_frame(use_pandas=True).to_json()
-    print(response)
-    print(type(response))
-    return response
+    return {"message": model_uri}
 
 @app.get("/")
 async def main():
