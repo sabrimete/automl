@@ -104,7 +104,7 @@ async def predict(request: Request):
     print(output)
     return output
 
-@app.post("/train")
+@app.post("/supervised-train")
 async def train(request: Request):
     form_data = await request.form()
     file = form_data["file"].file
@@ -139,6 +139,52 @@ async def train(request: Request):
         include_algos=include_algos
     )
     aml.train(x=x, y=y, training_frame=main_frame)
+
+    
+
+    lb = aml.leaderboard
+    global global_leaderboard
+    global_leaderboard = aml.leaderboard
+    lb.head(rows=lb.nrows)
+
+    response =  aml.leaderboard.as_data_frame(use_pandas=True).to_json()
+    print(response)
+    print(type(response))
+    return response
+
+@app.post("/unsupervised-train")
+async def train(request: Request):
+    form_data = await request.form()
+    file = form_data["file"].file
+    max_runtime_secs = int(form_data.get("max_runtime_secs") or 300)
+    max_models = int(form_data.get("max_models") or 6)
+    # if(max_models == 1):
+    #     max_models = 2
+    nfolds = int(form_data.get("nfolds") or 5)
+    seed = int(form_data.get("seed") or 42)
+    include_algos = form_data.get("include_algos")
+    print(include_algos)
+    if include_algos:
+        include_algos = json.loads(include_algos)
+    else:
+        include_algos = None
+    print("PARAMS ", max_runtime_secs, max_models, nfolds, seed, include_algos)
+
+    file_obj = io.BytesIO(file.read())
+    train_df = pd.read_csv(file_obj)
+    main_frame = h2o.H2OFrame(train_df)
+
+    x = [n for n in main_frame.col_names if n != y]
+
+    
+    aml = H2OAutoML(
+        max_runtime_secs=max_runtime_secs,
+        max_models=max_models,
+        nfolds=nfolds,
+        seed=seed,
+        include_algos=include_algos
+    )
+    aml.train(x=x, training_frame=main_frame)
 
     
 
