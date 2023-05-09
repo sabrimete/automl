@@ -1,9 +1,9 @@
-# Run this Docker compose file using `docker-compose up -d --build`
-# No need specify version 2 or 3 in latest Compose specification
+version: '3.9'
+
 services:
   backend:
     build: backend
-    image: e2e-automl-backend:latest     
+    image: e2e-automl-backend:latest
     ports:
       - "8000:8000"
       - "54321:54321"
@@ -13,14 +13,14 @@ services:
       - project_network
 
   frontend:
-    build: frontend
+    build: frontend-react
     image: e2e-automl-frontend:latest
     ports:
       - "80:80"
     volumes:
-      - ./frontend:/app/frontend
-    depends_on: 
-    - backend
+      - ./frontend-react:/app/frontend
+    depends_on:
+      - backend
     networks:
       - project_network
 
