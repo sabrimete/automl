@@ -181,3 +181,11 @@ transform: rotate(360deg);
 .highlight {
   background-color: #ed6f66 !important; 
 }
+
+.heatmapContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
+}

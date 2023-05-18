@@ -6,6 +6,11 @@ import PropagateLoader from "react-spinners/PropagateLoader";
 import RingLoader from "react-spinners/RingLoader";
 import Papa from "papaparse";
 
+const predict_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/predict';
+const train_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/train';
+const save_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/save_models';
+const heatmap_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/heatmap';
+
 
 const AutoMLPipeline = () => {
   const [trainFile, setTrainFile] = useState(null);
@@ -26,10 +31,96 @@ const AutoMLPipeline = () => {
   const [saveLoading, setSaveLoading] = useState(false);
   const [columnNames, setColumnNames] = useState([]);
   const [columnInsights, setColumnInsights] = useState([]);
+  const [columnsToDrop, setColumnsToDrop] = useState(new Set());
+  const [heatmap, setHeatmap] = useState(null);
 
+  const handleHeatmapButtonClick = async () => {
+    if (heatmap) {
+      URL.revokeObjectURL(heatmap);
+      setHeatmap(null);
+    }
+  
+    const formData = new FormData();
+    formData.append("file", trainFile);
+  
+    const response = await fetch(heatmap_endpoint, {
+      method: "POST",
+      body: formData,
+    });
+  
+    if (!response.ok) {
+      console.error('Server response was not ok');
+      return;
+    }
+  
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    setHeatmap(objectUrl);
+  };
+  
 
+  const handleColumnDropChange = (e) => {
+    const columnName = e.target.name;
+    if (e.target.checked) {
+      setColumnsToDrop((prev) => new Set([...prev, columnName]));
+    } else {
+      setColumnsToDrop((prev) => {
+        const newSet = new Set([...prev]);
+        newSet.delete(columnName);
+        return newSet;
+      });
+    }
+  };
+
+  const handleDropColumnsClick = () => {
+    // Filter out the dropped columns from columnNames
+    const updatedColumnNames = columnNames.filter(
+      (columnName) => !columnsToDrop.has(columnName)
+    );
+    setColumnNames(updatedColumnNames);
+  
+    // Filter out the dropped columns from columnInsights
+    const updatedColumnInsights = columnInsights.filter(
+      (insight) => !columnsToDrop.has(insight.name)
+    );
+    setColumnInsights(updatedColumnInsights);
+  
+    // Filter out the dropped columns from the original train data
+    const fileReader = new FileReader();
+    fileReader.onload = async (event) => {
+      const fileContent = event.target.result;
+      const parsedData = Papa.parse(fileContent, { header: true });
+      const filteredData = parsedData.data.map((row) => {
+        const newRow = { ...row };
+        columnsToDrop.forEach((col) => {
+          delete newRow[col];
+        });
+        return newRow;
+      });
+  
+      const csvString = Papa.unparse(filteredData);
+
+      // convert string to Blob
+      const csvBlob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  
+      // convert Blob to File
+      const csvFile = new File([csvBlob], "updated_train.csv", { type: "text/csv" });
+  
+      setTrainFile(csvFile);
+    };
+    fileReader.readAsText(trainFile);
+  };
+  
   const analyzeColumns = (data) => {
-    const insights = data.reduce(
+    const filteredData = data.map((row) => {
+      const newRow = { ...row };
+      columnsToDrop.forEach((col) => {
+        delete newRow[col];
+      });
+      return newRow;
+    });
+
+    const insights = filteredData.reduce(
       (acc, row) => {
         Object.entries(row).forEach(([key, value]) => {
           if (!acc[key]) {
@@ -40,6 +131,7 @@ const AutoMLPipeline = () => {
               min: Number.POSITIVE_INFINITY,
               max: Number.NEGATIVE_INFINITY,
               sum: 0,
+              counter: 0,
             };
           }
   
@@ -51,6 +143,7 @@ const AutoMLPipeline = () => {
               acc[key].min = Math.min(acc[key].min, numValue);
               acc[key].max = Math.max(acc[key].max, numValue);
               acc[key].sum += numValue;
+              acc[key].counter += 1;
             }
   
             acc[key].unique_values.add(value);
@@ -67,9 +160,9 @@ const AutoMLPipeline = () => {
       type: isNaN(Array.from(data.unique_values)[0]) ? "string" : "number",
       unique_values: data.unique_values.size,
       null_count: data.null_count,
-      min: data.min === Number.POSITIVE_INFINITY ? null : data.min,
-      max: data.max === Number.NEGATIVE_INFINITY ? null : data.max,
-      mean: data.sum / (data.unique_values.size - data.null_count),
+      min: isNaN(Array.from(data.unique_values)[0]) ? null : (data.min === Number.POSITIVE_INFINITY ? null : data.min),
+      max: isNaN(Array.from(data.unique_values)[0]) ? null : (data.max === Number.NEGATIVE_INFINITY ? null : data.max),
+      mean: isNaN(Array.from(data.unique_values)[0]) ? null : (data.sum / (data.counter - data.null_count)).toFixed(2),
     }));
   
     setColumnInsights(result);
@@ -135,10 +228,11 @@ const AutoMLPipeline = () => {
     setSelectedAlgos(selected);
   };
 
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setTrainLoading(true);
-
+  
     const formData = new FormData();
     formData.append("file", trainFile);
     formData.append("target_string", targetString);
@@ -147,8 +241,8 @@ const AutoMLPipeline = () => {
     if (nfolds) formData.append("nfolds", nfolds);
     if (seed) formData.append("seed", seed);
     if (selectedAlgos.length != 0) formData.append("include_algos", JSON.stringify(selectedAlgos));
-
-    const response = await fetch("http://localhost:8000/train", {
+  
+    const response = await fetch(train_endpoint, {
       method: "POST",
       body: formData,
     });
@@ -173,7 +267,7 @@ const AutoMLPipeline = () => {
     const formData = new FormData();
     formData.append("file", predictFile);
 
-    const response = await fetch("http://localhost:8000/predict", {
+    const response = await fetch(predict_endpoint, {
       method: "POST",
       body: formData,
     });
@@ -185,7 +279,7 @@ const AutoMLPipeline = () => {
 
   const saveSelectedModels = async () => {
     setSaveLoading(true);
-    const response = await fetch("http://localhost:8000/save_models", {
+    const response = await fetch(save_endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -319,10 +413,11 @@ const AutoMLPipeline = () => {
                 <th>Name</th>
                 <th>Type</th>
                 <th>Unique Values</th>
-                <th>Null Count</th>
+                <th>Missing Values</th>
                 <th>Min</th>
                 <th>Max</th>
                 <th>Mean</th>
+                <th>Drop Column</th>
               </tr>
             </thead>
             <tbody>
@@ -334,11 +429,21 @@ const AutoMLPipeline = () => {
                   <td>{insight.null_count}</td>
                   <td>{insight.min}</td>
                   <td>{insight.max}</td>
-                  <td>{insight.mean.toFixed(2)}</td>
+                  <td>{insight.mean}</td>
+                  <td>
+                  <input
+                    type="checkbox"
+                    id={`drop_${insight.name}`}
+                    name={insight.name}
+                    onChange={handleColumnDropChange}
+                  />
+                </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          <button onClick={handleDropColumnsClick}>Drop Selected Columns</button>
+          <button onClick={handleHeatmapButtonClick}>Get the Heatmap</button>
         </div>
       )}
 
@@ -364,7 +469,11 @@ const AutoMLPipeline = () => {
       )}
         </div>
       )}
-
+      {heatmap && (
+        <div className={styles.heatmapContainer}>
+          <img src={heatmap} alt="heatmap" />
+        </div>
+      )}
       <div className={styles.predictSection}>
         <h2>Predict</h2>
         <form onSubmit={handlePredictSubmit}>
@@ -383,6 +492,7 @@ const AutoMLPipeline = () => {
         </div>
       )}
       </div>
+
     </div>
   );
 };
