@@ -81,6 +81,18 @@ async def save_models(model_ids: list[str] = Body(...)):
         # For example, you can save the models to a file or database
     return {"message": model_uri}
 
+@app.get("/run_names")
+async def get_run_names():
+    all_exps = [exp.experiment_id for exp in client.search_experiments()]
+    runs = mlflow.search_runs(experiment_ids=all_exps, run_view_type=ViewType.ACTIVE_ONLY)
+    runs = runs[runs['status'] != 'FAILED']
+    return runs['tags.mlflow.runName'].values.tolist()
+
+@app.post("/run_info")
+async def get_run_info(run_name: str = Body(...)):
+    all_exps = [exp.experiment_id for exp in client.search_experiments()]
+    run_info = client.search_runs(experiment_ids=all_exps, run_view_type=ViewType.ACTIVE_ONLY, filter_string=f"tags.mlflow.runName = '{run_name}'")[0]
+    return json.dumps(run_info.to_dictionary())
 
 @app.post("/predict")
 async def predict(request: Request):
@@ -291,10 +303,7 @@ async def train(request: Request):
 async def main():
     content = """
     <body>
-    <h2> Welcome to the End to End AutoML Pipeline Project for Insurance Cross-Sell</h2>
-    <p> The H2O model and FastAPI instances have been set up successfully </p>
-    <p> You can view the FastAPI UI by heading to localhost:8000 </p>
-    <p> Proceed to initialize the Streamlit UI (frontend/app.py) to submit prediction requests </p>
+    <h2> Welcome to the End to End AutoML Pipeline Project</h2>
     </body>
     """
     return HTMLResponse(content=content)
