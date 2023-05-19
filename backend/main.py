@@ -4,12 +4,14 @@ import io
 import h2o
 import json
 import sklearn
+import seaborn as sns
+import matplotlib.pyplot as plt
 from h2o.automl import H2OAutoML, get_leaderboard
 from h2o.estimators import H2OKMeansEstimator
 from matplotlib import pyplot as plt
 from base64 import encodebytes
 
-from fastapi import FastAPI, File, Form, UploadFile, Request, Body
+from fastapi import FastAPI, File, Form, UploadFile, Request, Response, Body
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -96,6 +98,23 @@ async def get_run_info(run_name: str = Body(...)):
     all_exps = [exp.experiment_id for exp in client.search_experiments()]
     run_info = client.search_runs(experiment_ids=all_exps, run_view_type=ViewType.ACTIVE_ONLY, filter_string=f"tags.mlflow.runName = '{run_name}'")[0]
     return json.dumps(run_info.to_dictionary())
+
+@app.post("/heatmap")
+async def heatmap(request: Request):
+    print("heatmap")
+    form_data = await request.form()
+    file = form_data["file"].file
+    file_obj = io.BytesIO(file.read())
+    data = pd.read_csv(file_obj)
+
+    plt.figure(figsize=(12, 10))
+    sns.heatmap(data.corr(), annot=True, cmap="coolwarm", fmt=".2f")
+
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format="png")
+    buffer.seek(0)
+
+    return Response(content=buffer.getvalue(), media_type="image/png")
 
 @app.post("/predict")
 async def predict(request: Request):
