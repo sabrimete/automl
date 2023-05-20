@@ -1,6 +1,6 @@
 // Leaderboard.js
 import React, { useState, useMemo } from 'react';
-
+import Button from '@mui/material/Button';
 const Leaderboard = ({ data, selectedModels, setSelectedModels, onSave }) => {
 
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
@@ -81,7 +81,7 @@ const Leaderboard = ({ data, selectedModels, setSelectedModels, onSave }) => {
             ))}
         </tbody>
       </table>
-      <button onClick={onSave}>Save Selected Models</button>
+      <Button onClick={onSave} style={{ width: "300px", height: "50px", margin: "10px"}} color="info" variant="contained" type="submit"><strong>Save Selected Models</strong></Button>
     </div>
   );
 };

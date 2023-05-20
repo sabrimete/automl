@@ -189,3 +189,12 @@ transform: rotate(360deg);
   width: 100%;
   margin-top: 20px;
 }
+
+.navbar {
+  margin: 30px 30px;
+  margin-bottom: 2px;
+  background: linear-gradient(25deg, #FFFFFF 0%, rgba(0, 0, 0, 0.676) 100%);
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: #00000089 3px solid;
+}
