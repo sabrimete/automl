@@ -1,35 +1,29 @@
-import numpy as np
-import pandas as pd
 import io
-import h2o
 import json
-import sklearn
-import seaborn as sns
-import matplotlib.pyplot as plt
-from h2o.automl import H2OAutoML, get_leaderboard
-from h2o.estimators import H2OKMeansEstimator
-from matplotlib import pyplot as plt
+import random
 from base64 import encodebytes
 
-from fastapi import FastAPI, File, Form, UploadFile, Request, Response, Body
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, HTMLResponse
-from fastapi.middleware.cors import CORSMiddleware
-
-import random
-
-
+import h2o
 import mlflow
 import mlflow.h2o
-from mlflow.tracking import MlflowClient
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import sklearn
+from fastapi import FastAPI, Request, Response, Body
+from fastapi.encoders import jsonable_encoder
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, HTMLResponse
+from h2o.automl import H2OAutoML
+from h2o.estimators import H2OKMeansEstimator
+from matplotlib import pyplot as plt
 from mlflow.entities import ViewType
-
-
-from google.cloud import storage
+from mlflow.tracking import MlflowClient
 from sklearn.metrics import accuracy_score
 
 app = FastAPI()
 global_leaderboard = None
+unsupervised_file = None
 model = None
 # configure CORS middleware
 origins = ["*"]  # Replace * with your specific domain if you don't want to allow all domains
@@ -186,14 +180,14 @@ async def train(request: Request):
     print(type(response))
     return response
 
-@app.post("/unsupervised-train")
-async def unsupervisedTrain(request: Request):
+@app.post("/unsupervised-train-suggest")
+async def unsupervisedTrainSuggest(request: Request):
+    global unsupervised_file
     form_data = await request.form()
     data = form_data["file"].file
     file_obj = io.BytesIO(data.read())
     data_pd = h2o.H2OFrame(pd.read_csv(file_obj))
-    # data_pd = h2o.H2OFrame(train_df)
-    # data_pd = h2o.H2OFrame(train_df.values.tolist(), column_names=train_df.columns.tolist())
+    unsupervised_file = data_pd
 
     # Convert the H2OFrame object to a pandas DataFrame
     data_df = data_pd.as_data_frame()
@@ -254,6 +248,27 @@ async def unsupervisedTrain(request: Request):
     optimal_k = k_values[np.argmax(silhouette_scores)]
     print("Optimal value of k: ", optimal_k)
 
+    response = {
+        "elbowImage": elbowImage,
+        "silhouetteImage": silhouetteImage,
+        "optimal_k": optimal_k,
+    }
+
+    return response
+
+@app.post("/unsupervised-train-final")
+async def unsupervisedTrainFinal(request: Request):
+    global unsupervised_file
+    form_data = await request.form()
+    optimal_k = int(form_data.get("optimal_k"))
+    data_pd = unsupervised_file
+
+    # Convert the H2OFrame object to a pandas DataFrame
+    data_df = data_pd.as_data_frame()
+
+    # Extract the labels from the first line
+    labels = data_df.columns
+
     # Train the final k-means model with the optimal k value
     final_kmeans = H2OKMeansEstimator(k=optimal_k, seed=123)
     final_kmeans.train(training_frame=data_pd)
@@ -287,13 +302,6 @@ async def unsupervisedTrain(request: Request):
 
     data = [arr.tolist() for arr in responseOutliers]
     responseOutliers = {f"outlier {i + 1}": arr for i, arr in enumerate(data)}
-
-    # # Print the cluster groups
-    # for i in range(optimal_k):
-    #     cluster_data = data_np[clusters == i]
-    #     cluster_outliers = cluster_data[np.isin(np.where(clusters == i)[0], outliers)]
-    #     print("Cluster ", i + 1, ":", cluster_data)
-    #     print("Outliers in Cluster ", i + 1, ":", cluster_outliers)
 
     # Prepare the plot based on the number of dimensions
     num_dimensions = data_pd.shape[1]
@@ -352,10 +360,7 @@ async def unsupervisedTrain(request: Request):
         print("Cannot plot for data with more than 3 dimensions.")
 
     response = {
-        "elbowImage": elbowImage,
-        "silhouetteImage": silhouetteImage,
         "finalImage": finalImage,
-        "optimal_k": optimal_k,
         "clusters": responseCluster,
         "outliers": responseOutliers,
     }
