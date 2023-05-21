@@ -37,9 +37,37 @@ app.add_middleware(
 
 # Initiate H2O instance and MLflow client
 h2o.init()
-TRACKING_SERVER_HOST = "https://mlflow-server-6r72er7ega-uc.a.run.app" # fill in with the external IP of the compute engine instance
+TRACKING_SERVER_HOST = "https://mlflow-server-6r72er7ega-uc.a.run.app"  # fill in with the external IP of the compute engine instance
 mlflow.set_tracking_uri(TRACKING_SERVER_HOST)
 client = MlflowClient(TRACKING_SERVER_HOST)
+
+
+def increment_array_int(first, last, increment):
+    if first is None or last is None or increment is None or int(increment) <= 0:
+        return None
+    first = int(first)
+    last = int(last)
+    increment = int(increment)
+    array = []
+    current = first
+    while current <= last:
+        array.append(current)
+        current += increment
+    return array
+
+
+def increment_array_float(first, last, increment):
+    if first is None or last is None or increment is None or int(increment) <= 0:
+        return None
+    first = float(first)
+    last = float(last)
+    increment = float(increment)
+    array = []
+    current = first
+    while current <= last:
+        array.append(current)
+        current += increment
+    return array
 
 
 @app.post("/save_models")
@@ -56,7 +84,7 @@ async def save_models(model_ids: list[str] = Body(...)):
         experiment = client.get_experiment_by_name(experiment_name)
     except:
         experiment = client.get_experiment_by_name(experiment_name)
-    
+
     mlflow.set_experiment(experiment_name)
 
     # Print experiment details
@@ -67,7 +95,6 @@ async def save_models(model_ids: list[str] = Body(...)):
     print(f"Tracking uri: {mlflow.get_tracking_uri()}")
 
     for model_id in model_ids:
-
         with mlflow.start_run():
             model = h2o.get_model(model_id)
 
@@ -80,6 +107,7 @@ async def save_models(model_ids: list[str] = Body(...)):
         # For example, you can save the models to a file or database
     return {"message": model_uri}
 
+
 @app.get("/run_names")
 async def get_run_names():
     all_exps = [exp.experiment_id for exp in client.search_experiments()]
@@ -87,11 +115,14 @@ async def get_run_names():
     runs = runs[runs['status'] != 'FAILED']
     return runs['tags.mlflow.runName'].values.tolist()
 
+
 @app.post("/run_info")
 async def get_run_info(run_name: str = Body(...)):
     all_exps = [exp.experiment_id for exp in client.search_experiments()]
-    run_info = client.search_runs(experiment_ids=all_exps, run_view_type=ViewType.ACTIVE_ONLY, filter_string=f"tags.mlflow.runName = '{run_name}'")[0]
+    run_info = client.search_runs(experiment_ids=all_exps, run_view_type=ViewType.ACTIVE_ONLY,
+                                  filter_string=f"tags.mlflow.runName = '{run_name}'")[0]
     return json.dumps(run_info.to_dictionary())
+
 
 @app.post("/heatmap")
 async def heatmap(request: Request):
@@ -110,6 +141,7 @@ async def heatmap(request: Request):
 
     return Response(content=buffer.getvalue(), media_type="image/png")
 
+
 @app.post("/predict")
 async def predict(request: Request):
     form_data = await request.form()
@@ -124,13 +156,14 @@ async def predict(request: Request):
     run_id, exp_id, artifact_uri = runs.loc[0]['run_id'], runs.loc[0]['experiment_id'], runs.loc[0]['artifact_uri']
     print(f'Loading best model: Run {run_id} of Experiment {exp_id}')
 
-    last_model = mlflow.h2o.load_model(artifact_uri+'/model')
+    last_model = mlflow.h2o.load_model(artifact_uri + '/model')
 
     predictions = last_model.predict(predict_frame).as_data_frame()['predict'].values
     json_compatible_item_data = jsonable_encoder(predictions.tolist())
     output = JSONResponse(content=json_compatible_item_data)
     print(output)
     return output
+
 
 @app.post("/train")
 async def train(request: Request):
@@ -149,7 +182,7 @@ async def train(request: Request):
         include_algos = json.loads(include_algos)
     else:
         include_algos = None
-    print("PARAMS ",trainString, max_runtime_secs, max_models, nfolds, seed, include_algos)
+    print("PARAMS ", trainString, max_runtime_secs, max_models, nfolds, seed, include_algos)
 
     file_obj = io.BytesIO(file.read())
     train_df = pd.read_csv(file_obj)
@@ -158,7 +191,6 @@ async def train(request: Request):
     y = trainString
     x = [n for n in main_frame.col_names if n != y]
 
-    
     aml = H2OAutoML(
         max_runtime_secs=max_runtime_secs,
         max_models=max_models,
@@ -168,17 +200,16 @@ async def train(request: Request):
     )
     aml.train(x=x, y=y, training_frame=main_frame)
 
-    
-
     lb = aml.leaderboard
     global global_leaderboard
     global_leaderboard = aml.leaderboard
     lb.head(rows=lb.nrows)
 
-    response =  aml.leaderboard.as_data_frame(use_pandas=True).to_json()
+    response = aml.leaderboard.as_data_frame(use_pandas=True).to_json()
     print(response)
     print(type(response))
     return response
+
 
 @app.post("/unsupervised-train-suggest")
 async def unsupervisedTrainSuggest(request: Request):
@@ -210,8 +241,8 @@ async def unsupervisedTrainSuggest(request: Request):
 
         # Compute the silhouette score
         predictions = kmeans.predict(data_pd)
-        silhouette_scores.append(sklearn.metrics.silhouette_score(data_df, predictions.as_data_frame(), metric='euclidean'))
-
+        silhouette_scores.append(
+            sklearn.metrics.silhouette_score(data_df, predictions.as_data_frame(), metric='euclidean'))
 
         # Compute the sum of squared errors (SSE)
         sse.append(kmeans.tot_withinss())
@@ -255,6 +286,7 @@ async def unsupervisedTrainSuggest(request: Request):
     }
 
     return response
+
 
 @app.post("/unsupervised-train-final")
 async def unsupervisedTrainFinal(request: Request):
@@ -382,25 +414,35 @@ async def manualSupervisedTrain(request: Request):
     train, valid = file.split_frame(ratios=[0.7], seed=1234)
 
     gbmGridSearchParameters = {
-        "ntrees": [10, 20, 30],
-        "max_depth": [10, 20, 30],
-        "learn_rate": [0.1, 0.2, 0.3],
+        "ntrees": increment_array_int(form_data.get("ntrees_first"), form_data.get("ntrees_last"),
+                                      form_data.get("ntrees_step")) or [10, 20, 30],
+        "max_depth": increment_array_int(form_data.get("max_depth_first"), form_data.get("max_depth_last"),
+                                         form_data.get("max_depth_step")) or [10, 20, 30],
+        "learn_rate": increment_array_float(form_data.get("learn_rate_first"), form_data.get("learn_rate_last"),
+                                            form_data.get("learn_rate_step")) or [0.1, 0.2, 0.3],
     }
 
     glmGridSearchParameters = {
-        "alpha": [0.1, 0.2, 0.3],
-        "lambda": [0.1, 0.2, 0.3],
+        "alpha": increment_array_float(form_data.get("alpha_first"), form_data.get("alpha_last"),
+                                       form_data.get("alpha_step")) or [0.1, 0.2, 0.3],
+        "lambda": increment_array_float(form_data.get("lambda_first"), form_data.get("lambda_last"),
+                                        form_data.get("lambda_step")) or [0.1, 0.2, 0.3],
     }
 
     xgbGridSearchParameters = {
-        "ntrees": [10, 20, 30],
-        "max_depth": [10, 20, 30],
-        "learn_rate": [0.1, 0.2, 0.3],
+        "ntrees": increment_array_int(form_data.get("ntrees_first"), form_data.get("ntrees_last"),
+                                      form_data.get("ntrees_step")) or [10, 20, 30],
+        "max_depth": increment_array_int(form_data.get("max_depth_first"), form_data.get("max_depth_last"),
+                                         form_data.get("max_depth_step")) or [10, 20, 30],
+        "learn_rate": increment_array_float(form_data.get("learn_rate_first"), form_data.get("learn_rate_last"),
+                                            form_data.get("learn_rate_step")) or [0.1, 0.2, 0.3],
     }
 
     rfGridSearchParameters = {
-        "ntrees": [10, 20, 30],
-        "max_depth": [10, 20, 30]
+        "ntrees": increment_array_int(form_data.get("ntrees_first"), form_data.get("ntrees_last"),
+                                      form_data.get("ntrees_step")) or [10, 20, 30],
+        "max_depth": increment_array_int(form_data.get("max_depth_first"), form_data.get("max_depth_last"),
+                                         form_data.get("max_depth_step")) or [10, 20, 30],
     }
 
     if algo == "gbm":
@@ -415,19 +457,30 @@ async def manualSupervisedTrain(request: Request):
 
         gridSearch = h2o.grid.H2OGridSearch(gbm, gbmGridSearchParameters)
         gridSearch.train(x=predictors, y=response, training_frame=train, validation_frame=valid)
-        best_model = gridSearch.get_grid(sort_by='rmse', decreasing=False).models[0]  # get best model
-        global global_leaderboard
 
-        response = {
-            "model_id": {"0": best_model.model_performance(valid)._metric_json["model"]["name"]},
-            "rmse": {"0": best_model.rmse()},
-            "mse": {"0":best_model.mse()},
-            "mae": {"0":best_model.mae()},
-            "rmsle": {"0":best_model.rmsle()},
-            "mean_residual_deviance": {"0": best_model.mean_residual_deviance()},
-        }
-        global_leaderboard = response
+        # create response for all models
+        response = {'model_id': {}, 'rmse': {}, 'mse': {}, 'mae': {}, 'rmsle': {}, 'mean_residual_deviance': {},
+                    'params': {}}
+        for i in range(len(gridSearch.get_grid(sort_by='rmse', decreasing=False).models)):
+            model = gridSearch.get_grid(sort_by='rmse', decreasing=False).models[i]
+            response["model_id"][str(i)] = model.model_performance(valid)._metric_json["model"]["name"]
+            response["rmse"][str(i)] = model.rmse()
+            response["mse"][str(i)] = model.mse()
+            response["mae"][str(i)] = model.mae()
+            response["rmsle"][str(i)] = model.rmsle()
+            response["mean_residual_deviance"][str(i)] = model.mean_residual_deviance()
+            response["params"][str(i)] = {}
+            response["params"][str(i)]["ntrees"] = model.actual_params['ntrees']
+            response["params"][str(i)]["max_depth"] = model.actual_params['max_depth']
+            response["params"][str(i)]["learn_rate"] = model.actual_params['learn_rate']
+            response["params"][str(i)]["min_rows"] = model.actual_params['min_rows']
+            response["params"][str(i)]["sample_rate"] = model.actual_params['sample_rate']
+            response["params"][str(i)]["col_sample_rate"] = model.actual_params['col_sample_rate']
+            response["params"][str(i)]["min_split_improvement"] = model.actual_params['min_split_improvement']
+            response["params"][str(i)]["distribution"] = model.actual_params['distribution']
+
         return response
+
     elif algo == "glm":
         # Create a GLM model
         glm = h2o.estimators.H2OGeneralizedLinearEstimator(
@@ -440,17 +493,26 @@ async def manualSupervisedTrain(request: Request):
 
         gridSearch = h2o.grid.H2OGridSearch(glm, glmGridSearchParameters)
         gridSearch.train(x=predictors, y=response, training_frame=train, validation_frame=valid)
-        best_model = gridSearch.get_grid(sort_by='rmse', decreasing=False).models[0]  # get best model
 
-        response = {
-            "model_id": {"0": best_model.model_performance(valid)._metric_json["model"]["name"]},
-            "rmse": {"0": best_model.model_performance(valid)._metric_json["RMSE"]},
-            "mse": {"0":best_model.model_performance(valid)._metric_json["MSE"]},
-            "mae": {"0": None},
-            "rmsle": {"0": None},
-            "mean_residual_deviance": {"0": None},
-        }
-        global_leaderboard = response
+        # create response for all models
+        response = {'model_id': {}, 'rmse': {}, 'mse': {}, 'mae': {}, 'rmsle': {}, 'mean_residual_deviance': {},
+                    'params': {}}
+        for i in range(len(gridSearch.get_grid(sort_by='rmse', decreasing=False).models)):
+            model = gridSearch.get_grid(sort_by='rmse', decreasing=False).models[i]
+            response["model_id"][str(i)] = model.model_performance(valid)._metric_json["model"]["name"]
+            response["rmse"][str(i)] = model.rmse()
+            response["mse"][str(i)] = model.mse()
+            response["mae"][str(i)] = None
+            response["rmsle"][str(i)] = None
+            response["mean_residual_deviance"][str(i)] = None
+            response["params"][str(i)] = {}
+            response["params"][str(i)]["alpha"] = model.actual_params['alpha']
+            response["params"][str(i)]["lambda"] = model.actual_params['lambda']
+            response["params"][str(i)]["family"] = model.actual_params['family']
+            response["params"][str(i)]["max_iterations"] = model.actual_params['max_iterations']
+            response["params"][str(i)]["link"] = model.actual_params['link']
+            response["params"][str(i)]["missing_values_handling"] = model.actual_params['missing_values_handling']
+
         return response
 
     elif algo == "xgb":
@@ -466,17 +528,28 @@ async def manualSupervisedTrain(request: Request):
 
         gridSearch = h2o.grid.H2OGridSearch(xgb, xgbGridSearchParameters)
         gridSearch.train(x=predictors, y=response, training_frame=train, validation_frame=valid)
-        best_model = gridSearch.get_grid(sort_by='rmse', decreasing=False).models[0]  # get best model
 
-        response = {
-            "model_id": {"0": best_model.model_performance(valid)._metric_json["model"]["name"]},
-            "rmse": {"0": best_model.rmse()},
-            "mse": {"0": best_model.mse()},
-            "mae": {"0": best_model.mae()},
-            "rmsle": {"0": best_model.rmsle()},
-            "mean_residual_deviance": {"0": best_model.mean_residual_deviance()},
-        }
-        global_leaderboard = response
+        # create response for all models
+        response = {'model_id': {}, 'rmse': {}, 'mse': {}, 'mae': {}, 'rmsle': {}, 'mean_residual_deviance': {},
+                    'params': {}}
+        for i in range(len(gridSearch.get_grid(sort_by='rmse', decreasing=False).models)):
+            model = gridSearch.get_grid(sort_by='rmse', decreasing=False).models[i]
+            response["model_id"][str(i)] = model.model_performance(valid)._metric_json["model"]["name"]
+            response["rmse"][str(i)] = model.rmse()
+            response["mse"][str(i)] = model.mse()
+            response["mae"][str(i)] = model.mae()
+            response["rmsle"][str(i)] = model.rmsle()
+            response["mean_residual_deviance"][str(i)] = model.mean_residual_deviance()
+            response["params"][str(i)] = {}
+            response["params"][str(i)]["ntrees"] = model.actual_params['ntrees']
+            response["params"][str(i)]["max_depth"] = model.actual_params['max_depth']
+            response["params"][str(i)]["learn_rate"] = model.actual_params['learn_rate']
+            response["params"][str(i)]["min_rows"] = model.actual_params['min_rows']
+            response["params"][str(i)]["sample_rate"] = model.actual_params['sample_rate']
+            response["params"][str(i)]["col_sample_rate"] = model.actual_params['col_sample_rate']
+            response["params"][str(i)]["min_split_improvement"] = model.actual_params['min_split_improvement']
+            response["params"][str(i)]["booster"] = model.actual_params['booster']
+
         return response
 
     elif algo == "rf":
@@ -493,18 +566,29 @@ async def manualSupervisedTrain(request: Request):
 
         gridSearch = h2o.grid.H2OGridSearch(rf, rfGridSearchParameters)
         gridSearch.train(x=predictors, y=response, training_frame=train, validation_frame=valid)
-        best_model = gridSearch.get_grid(sort_by='rmse', decreasing=False).models[0]  # get best model
 
-        response = {
-            "model_id": {"0": best_model.model_performance(valid)._metric_json["model"]["name"]},
-            "rmse": {"0": best_model.model_performance(valid)._metric_json["RMSE"]},
-            "mse": {"0": best_model.model_performance(valid)._metric_json["MSE"]},
-            "mae": {"0": best_model.model_performance(valid)._metric_json["mae"]},
-            "rmsle": {"0": best_model.model_performance(valid)._metric_json["mae"]},
-            "mean_residual_deviance": {"0": best_model.model_performance(valid)._metric_json["mean_residual_deviance"]},
-        }
-        global_leaderboard = response
+        # create response for all models
+        response = {'model_id': {}, 'rmse': {}, 'mse': {}, 'mae': {}, 'rmsle': {}, 'mean_residual_deviance': {},
+                    'params': {}}
+        for i in range(len(gridSearch.get_grid(sort_by='rmse', decreasing=False).models)):
+            model = gridSearch.get_grid(sort_by='rmse', decreasing=False).models[i]
+            response["model_id"][str(i)] = model.model_performance(valid)._metric_json["model"]["name"]
+            response["rmse"][str(i)] = model.rmse()
+            response["mse"][str(i)] = model.mse()
+            response["mae"][str(i)] = model.mae()
+            response["rmsle"][str(i)] = model.rmsle()
+            response["mean_residual_deviance"][str(i)] = model.mean_residual_deviance()
+            response["params"][str(i)] = {}
+            response["params"][str(i)]["ntrees"] = model.actual_params['ntrees']
+            response["params"][str(i)]["max_depth"] = model.actual_params['max_depth']
+            response["params"][str(i)]["min_rows"] = model.actual_params['min_rows']
+            response["params"][str(i)]["sample_rate"] = model.actual_params['sample_rate']
+            response["params"][str(i)]["col_sample_rate_per_tree"] = model.actual_params['col_sample_rate_per_tree']
+            response["params"][str(i)]["min_split_improvement"] = model.actual_params['min_split_improvement']
+            response["params"][str(i)]["mtries"] = model.actual_params['mtries']
+
         return response
+
 
 @app.get("/")
 async def main():
