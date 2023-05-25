@@ -226,6 +226,10 @@ async def unsupervisedTrainSuggest(request: Request):
     # Extract the labels from the first line
     labels = data_df.columns
 
+    for i in range(len(labels)):
+        if str(data_df[labels[i]][0]) == "nan":
+            return {"error": "Please remove string columns from the dataset."}
+
     # Define the range of k values to try
     k_values = range(2, 10)
 
