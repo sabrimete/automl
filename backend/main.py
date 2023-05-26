@@ -238,12 +238,12 @@ async def train(request: Request):
     )
     aml.train(x=x, y=y, training_frame=main_frame)
 
-    lb = aml.leaderboard
+    lb = h2o.automl.get_leaderboard(aml, extra_columns='ALL')
     global global_leaderboard
-    global_leaderboard = aml.leaderboard
+    global_leaderboard = lb
     lb.head(rows=lb.nrows)
 
-    response = aml.leaderboard.as_data_frame(use_pandas=True).to_json()
+    response = lb.as_data_frame(use_pandas=True).to_json()
     print(response)
     print(type(response))
     return response
@@ -640,3 +640,5 @@ async def main():
     </body>
     """
     return HTMLResponse(content=content)
+
+
