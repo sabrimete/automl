@@ -5,7 +5,7 @@ import h2o
 import json
 from h2o.automl import H2OAutoML, get_leaderboard
 
-
+import uvicorn
 from fastapi import FastAPI, File, Form, UploadFile, Request, Body
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, HTMLResponse
@@ -44,7 +44,7 @@ client = MlflowClient(TRACKING_SERVER_HOST)
 
 
 @app.post("/save_models")
-async def save_models(model_ids: list[str] = Body(...)):
+async def save_models(model_ids: list[str] = Body(...), train_file_name: str = Body(...)):
     global global_leaderboard
 
     if global_leaderboard is None:
@@ -71,6 +71,36 @@ async def save_models(model_ids: list[str] = Body(...)):
 
         with mlflow.start_run():
             model = h2o.get_model(model_id)
+            mlflow.set_tag("mlflow.runName", model_id)
+
+            score_history = model.scoring_history()
+            metrics_list = ["accuracy", "auc", "logloss", "rmse", "mse", "mae", "rmsle", "residual_deviance", "mean_residual_deviance"]
+            metrics = {}
+            for metric in metrics_list:
+                if hasattr(model, metric):
+                    try:
+                        metrics[metric] = getattr(model, metric)()
+                    except Exception:
+                        pass
+            
+            if score_history is not None:
+                if 'timestamp' in score_history.columns:
+                    score_history['timestamp'] = pd.to_datetime(score_history['timestamp']).astype(int) // 10**9
+                non_numeric_cols = score_history.select_dtypes(exclude=[np.number]).columns
+                score_history = score_history.drop(columns=non_numeric_cols)
+                score_history = score_history.iloc[-1].to_dict()
+                metrics = {**score_history, **metrics}
+
+            metrics = {k: v for k, v in metrics.items() if v is not None}
+            mlflow.log_metrics(metrics)
+
+            mlflow.set_tag("train_file", train_file_name)
+
+            params = model.actual_params
+            for key in list(params.keys()):
+                if not isinstance(params[key], (str, int, float)):
+                    del params[key]
+            mlflow.log_params(params)
 
             # Log and save best model (mlflow.h2o provides API for logging & loading H2O models)
             mlflow.h2o.log_model(model, artifact_path='model')
@@ -81,12 +111,16 @@ async def save_models(model_ids: list[str] = Body(...)):
         # For example, you can save the models to a file or database
     return {"message": model_uri}
 
-@app.get("/run_names")
-async def get_run_names():
+@app.get("/runs")
+async def get_runs():
     all_exps = [exp.experiment_id for exp in client.search_experiments()]
     runs = mlflow.search_runs(experiment_ids=all_exps, run_view_type=ViewType.ACTIVE_ONLY)
     runs = runs[runs['status'] != 'FAILED']
-    return runs['tags.mlflow.runName'].values.tolist()
+    runs = runs.to_dict('records')
+    names = [run["tags.mlflow.runName"] for run in runs]
+    timestamps = [run["metrics.timestamp"] for run in runs]
+    train_files = [run["tags.train_file"] for run in runs]
+    return json.dumps({"names": names, "timestamps": timestamps, "train_files": train_files})
 
 @app.post("/run_info")
 async def get_run_info(run_name: str = Body(...)):
