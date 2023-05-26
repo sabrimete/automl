@@ -148,10 +148,8 @@ async def get_runs():
     runs = mlflow.search_runs(experiment_ids=all_exps, run_view_type=ViewType.ACTIVE_ONLY)
     runs = runs[runs['status'] != 'FAILED']
     runs = runs.to_dict('records')
-    names = [run["tags.mlflow.runName"] for run in runs]
-    timestamps = [run["metrics.timestamp"] for run in runs]
-    train_files = [run["tags.train_file"] for run in runs]
-    return json.dumps({"names": names, "timestamps": timestamps, "train_files": train_files})
+    rows = [[run["tags.mlflow.runName"], run["metrics.timestamp"], run["tags.train_file"]] for run in runs]
+    return rows
 
 
 @app.post("/run_info")
