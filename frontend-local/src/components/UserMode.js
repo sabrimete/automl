@@ -2,38 +2,46 @@ import React, { useState } from "react";
 import styles from './User.module.css';
 import Leaderboard from './Leaderboard';
 import PacmanLoader from "react-spinners/PacmanLoader";
-import PropagateLoader from "react-spinners/PropagateLoader";
 import RingLoader from "react-spinners/RingLoader";
 import Papa from "papaparse";
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-const predict_endpoint = 'https://inference-6r72er7ega-uc.a.run.app/predict';
-const all_models_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/run_names';
-const one_model_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/run_info';
+const theme = createTheme({
+  palette: {
+    user: {
+      // Purple and green play nicely together.
+      main: '#008394',
+    },
+    developer: {
+      // This is green.A700 as hex.
+      main: '#009688',
+    },
+    manual: {
+      // This is green.A700 as hex.
+      main: '#4caf50',
+    },
+    predict: {
+      main: '#8bc34a',
+    },
+  },
+});
+
 const train_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/train';
 const save_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/save_models';
 
 const User = () => {
   const [trainFile, setTrainFile] = useState(null);
-  const [trainFileLabel, setTrainFileLabel] = useState(" Choose file ");
-  const [predictFile, setPredictFile] = useState(null);
-  const [modelId, setModelId] = useState("");
-  const [predictFileLabel, setPredictFileLabel] = useState(" Choose file ");
   const [targetString, setTargetString] = useState("");
-  const [maxRuntimeSecs, setMaxRuntimeSecs] = useState("");
-  const [maxModels, setMaxModels] = useState("");
-  const [nfolds, setNfolds] = useState("");
-  const [seed, setSeed] = useState("");
-  const [selectedAlgos, setSelectedAlgos] = useState([]);
   const [leaderboardData, setLeaderboardData] = useState(null);
   const [selectedModels, setSelectedModels] = useState([]);
   const [trainLoading, setTrainLoading] = useState(false);
-  const [predictLoading, setpredictLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [columnNames, setColumnNames] = useState([]);
   const [columnInsights, setColumnInsights] = useState([]);
   const [columnsToDrop, setColumnsToDrop] = useState(new Set());
-  const [heatmap, setHeatmap] = useState(null);
 
   const analyzeColumns = (data) => {
     const filteredData = data.map((row) => {
@@ -94,7 +102,6 @@ const User = () => {
 
   const handleTrainFileChange = (e) => {
     setTrainFile(e.target.files[0]);
-    setTrainFileLabel(e.target.files[0].name);
     const fileReader = new FileReader();
     fileReader.onload = async (event) => {
     const fileContent = event.target.result;
@@ -111,15 +118,6 @@ const User = () => {
   fileReader.readAsText(e.target.files[0]);
   };
 
-  const handlePredictFileChange = (e) => {
-    setPredictFile(e.target.files[0]);
-    setPredictFileLabel(e.target.files[0].name);
-  };
-
-  const handleModelIdChange = (e) => {
-    setModelId(e.target.value);
-  };
-
   const handleTargetStringChange = (e) => {
     setTargetString(e.target.value);
   };
@@ -131,11 +129,6 @@ const User = () => {
     const formData = new FormData();
     formData.append("file", trainFile);
     formData.append("target_string", targetString);
-    if (maxRuntimeSecs) formData.append("max_runtime_secs", maxRuntimeSecs);
-    if (maxModels) formData.append("max_models", maxModels);
-    if (nfolds) formData.append("nfolds", nfolds);
-    if (seed) formData.append("seed", seed);
-    if (selectedAlgos.length != 0) formData.append("include_algos", JSON.stringify(selectedAlgos));
   
     const response = await fetch(train_endpoint, {
       method: "POST",
@@ -153,79 +146,6 @@ const User = () => {
     
     setLeaderboardData(parsedJsonData);    
     setTrainLoading(false);
-  };
-
-  const handlePredictSubmit = async (e) => {
-    e.preventDefault();
-    setpredictLoading(true);
-    const formData = new FormData();
-    formData.append("file", predictFile);
-    formData.append("run_name", modelId);
-
-    const response = await fetch(predict_endpoint, {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await response.json();
-    setpredictLoading(false);
-    const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
-    
-    // Create an object URL for the blob object
-    const url = URL.createObjectURL(blob);
-    
-    // Create a link element
-    const link = document.createElement('a');
-    
-    // Set the href and download attributes for the link
-    link.href = url;
-    link.download = 'predict_response.json';
-    
-    // Append the link to the body
-    document.body.appendChild(link);
-    
-    // Simulate click
-    link.click();
-    
-    // Remove the link after download
-    document.body.removeChild(link);
-  };
-
-  const getAllModels = async (e) => {
-    var container = document.getElementById("responseContainer");
-    e.preventDefault();
-    fetch(all_models_endpoint)  // Replace with your actual backend endpoint URL
-    .then(function(response) {
-      return response.json();
-    })
-    .then(function(responseData) {
-      // Iterate over the response data and create a paragraph for each item
-      responseData.forEach(function(item) {
-        var paragraph = document.createElement("p");
-        paragraph.textContent = item;
-        container.appendChild(paragraph);
-      });
-    })
-    .catch(function(error) {
-      console.log('Error:', error);
-    });
-    console.log(container)
-  };
-
-  const getOneModel = async (e) => {
-    var cont = document.getElementById("responseModel");
-    console.log(modelId);
-
-    e.preventDefault(); // If you are not using this function in a form submit event handler, this line is not needed
-  
-    const response = await fetch(one_model_endpoint, {
-      method: 'POST',
-      body: JSON.stringify({ run_name: modelId }),
-    });
-  
-    const data = await response.json();
-    console.log(data);
-    cont.appendChild(data);
   };
 
   const saveSelectedModels = async () => {
@@ -249,22 +169,35 @@ const User = () => {
     setSaveLoading(false);
   };
   return (
+    <ThemeProvider theme={theme}>
     <div className={styles.AutoMLPipeline__container}>
       <div className={styles.trainSection}>
       <h2>Train</h2>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="trainFile">Choose Your Train File </label>
+        <Box
+          component="form"
+          sx={{
+            '& > :not(style)': { m: 0, width: 'auto', height: 'auto' },
+          }}
+          noValidate
+          autoComplete="off"
+        >
+          <strong> Choose Your Train File</strong> <br></br>
+        <TextField id="filled-basic"  color="developer" type="file" variant="filled" onChange={(e) => handleTrainFileChange(e)}  />
+        </Box>
+        {/* <label htmlFor="trainFile"> <strong>Choose Your Train File  </strong></label>
         <input
           type="file"
           id="trainFile"
           name="trainFile"
           onChange={(e) => handleTrainFileChange(e)}
-          />
+          /> */}
           <label htmlFor="targetString">
             {columnNames.length > 0
-              ? "Select the target column. "
-              : "Upload your train.csv file first. "}
+              ? <strong>Select the target column </strong>
+              : <strong>Upload your train.csv file first! </strong>}
           </label>
+          <br></br>
           {columnNames.length > 0 ? (
           <select
             id="targetString"
@@ -289,11 +222,11 @@ const User = () => {
           />
         )}
         <br />
-          <Button style={{ width: "100px", height: "50px", margin: "10px"}} color="secondary" variant="contained" type="submit"><strong>Train</strong></Button>
+          <Button style={{ width: "100px", height: "50px", color:"white", margin: "10px"}} color="user" variant="contained" type="submit"><strong>Train</strong></Button>
         </form>
         {trainLoading && (
         <div className={styles.loadingSection}>
-          <PacmanLoader color="#7b1fa2" size={50} />
+          <PacmanLoader color="#008394" size={50} />
         </div>
       )}
       </div>
@@ -308,61 +241,13 @@ const User = () => {
           />
         {saveLoading && (
         <div className={styles.loadingSection}>
-          <RingLoader color="#7b1fa2" size={100} />
+          <RingLoader color="008394" size={100} />
         </div>
       )}
         </div>
       )}
-      {heatmap && (
-        <div className={styles.heatmapContainer}>
-          <img src={heatmap} alt="heatmap" />
-        </div>
-      )}
-      <div className={styles.predictSection}>
-        <h2>Predict</h2>
-        <div className={styles.predictForm}>
-        <form onSubmit={getAllModels}>
-        <strong> You can access all the models of our database: </strong> <br />
-        <Button style={{ width: "250px", height: "50px", margin: "10px"}} color="secondary" variant="contained" type="submit"><strong>Get All Model Ids From Database</strong></Button>
-        <div id="responseContainer"></div>
-        </form>
-        <form onSubmit={getOneModel}>
-          <label htmlFor="modelId"> <strong> Or you can get your model by ID: </strong></label>
-          <input
-            type="text"
-            id="modelId"
-            name="modelId"
-            value={modelId}
-            onChange={(e) => handleModelIdChange(e)}
-          />
-          <br />
-        <Button style={{ width: "250px", height: "50px", margin: "10px"}} color="secondary" variant="contained" type="submit"><strong> Get Your Model by Id</strong></Button>
-        <div id="responseModel"></div>
-        </form>
-        </div>
-        <br />
-        <br />
-        <br />
-        <form onSubmit={handlePredictSubmit}>
-          <label htmlFor="predictFile"> <strong> Choose Your Test File: </strong></label>
-          <input
-            type="file"
-            id="predictFile"
-            name="predictFile"
-            onChange={(e) => handlePredictFileChange(e)}
-          />
-          <br />
-          
-        <Button style={{ width: "300px", height: "50px", margin: "10px"}} color="secondary" variant="contained" type="submit"><strong>Predict by This Model</strong></Button>
-        </form>
-        {predictLoading && (
-        <div className={styles.loadingSection}>
-          <PropagateLoader color="#7b1fa2" size={50} />
-        </div>
-      )}
-      </div>
-
     </div>
+    </ThemeProvider>
   );
 };
 

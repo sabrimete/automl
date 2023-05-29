@@ -6,12 +6,67 @@ import PropagateLoader from "react-spinners/PropagateLoader";
 import RingLoader from "react-spinners/RingLoader";
 import Papa from "papaparse";
 import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 
 const predict_endpoint = 'https://inference-6r72er7ega-uc.a.run.app/predict';
 const train_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/train';
 const save_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/save_models';
 const heatmap_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/heatmap';
 
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+
+const names = [
+  'GLM',
+  'DeepLearning',
+  'DRF',
+  'GBM',
+  'XGBoost',
+  'StackedEnsemble',
+];
+
+function getStyles(name, selectedAlgo, theme) {
+  return {
+    fontWeight:
+      selectedAlgo.indexOf(name) === -1
+        ? theme.typography.fontWeightRegular
+        : theme.typography.fontWeightMedium,
+  };
+}
+
+const theme = createTheme({
+  palette: {
+    user: {
+      // Purple and green play nicely together.
+      main: '#008394',
+    },
+    developer: {
+      // This is green.A700 as hex.
+      main: '#00695f',
+    },
+    manual: {
+      // This is green.A700 as hex.
+      main: '#4caf50',
+    },
+    predict: {
+      main: '#8bc34a',
+    },
+  },
+});
 
 const Developer = () => {
   const [trainFile, setTrainFile] = useState(null);
@@ -212,16 +267,26 @@ const Developer = () => {
     setSeed(e.target.value);
   };
 
-  const handleAlgoSelectChange = (e) => {
-    const options = e.target.options;
-    const selected = [];
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) {
-        selected.push(options[i].value);
-      }
-    }
-    setSelectedAlgos(selected);
+  const handleAlgoSelectChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setSelectedAlgos(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
+    );
   };
+
+  // const handleAlgoSelectChange = (e) => {
+  //   const options = e.target.options;
+  //   const selected = [];
+  //   for (let i = 0; i < options.length; i++) {
+  //     if (options[i].selected) {
+  //       selected.push(options[i].value);
+  //     }
+  //   }
+  //   setSelectedAlgos(selected);
+  // };
 
   
   const handleSubmit = async (e) => {
@@ -314,24 +379,35 @@ const Developer = () => {
   
 
   return (
+    <ThemeProvider theme={theme}>
     <div className={styles.AutoMLPipeline__container}>
-
       <div className={styles.trainSection}>
       <h2>Train</h2>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="trainFile"> <strong>Choose Your Train File  </strong></label>
+        <Box
+          component="form"
+          sx={{
+            '& > :not(style)': { m: 0, width: 'auto' },
+          }}
+          noValidate
+          autoComplete="off"
+        >
+          <strong> Choose Your Train File</strong> <br></br>
+        <TextField id="filled-basic" color="developer" type="file" variant="filled" onChange={(e) => handleTrainFileChange(e)}  />
+        </Box>
+        {/* <label htmlFor="trainFile"> <strong>Choose Your Train File  </strong></label>
         <input
           type="file"
           id="trainFile"
           name="trainFile"
           onChange={(e) => handleTrainFileChange          (e)}
-          />
-          
+          /> */}
           <label htmlFor="targetString">
             {columnNames.length > 0
-              ? "Select the target column! "
-              : "Upload your train.csv file first! "}
+              ? <strong>Select the target column </strong>
+              : <strong>Upload your train.csv file first! </strong>}
           </label>
+          <br></br>
           {columnNames.length > 0 ? (
           <select
             id="targetString"
@@ -358,17 +434,35 @@ const Developer = () => {
           <br/> <br/>
         <strong> Specify the Desired Parameters</strong> 
             <div className={styles.inputs}>    
-            <br/>
-            <br/>
-            <label htmlFor="maxRuntimeSecs">Max Runtime Secs</label> <input
+            <Box
+              component="form"
+              sx={{
+                '& > :not(style)': { m: 1, width: '25ch' },
+              }}
+              noValidate
+              autoComplete="on"
+            >
+            <TextField id="outlined-number" color="developer" label="Max Runtime Secs" type="number" variant="outlined" onChange={(e) => handleMaxRuntimeSecsChange(e)}  />
+            </Box>
+            {/* <label htmlFor="maxRuntimeSecs">Max Runtime Secs</label> <input
             placeholder="Default is 3600"
             type="number"
             id="maxRuntimeSecs"
             name="maxRuntimeSecs"
             value={maxRuntimeSecs}
             onChange={(e) => handleMaxRuntimeSecsChange(e)} />
-            <br></br>
-            <label htmlFor="maxModels">Max Models </label>
+            <br></br> */}
+            <Box
+              component="form"
+              sx={{
+                '& > :not(style)': { m: 1, width: '25ch' },
+              }}
+              noValidate
+              autoComplete="on"
+            >
+            <TextField id="outlined-number" color="developer" label="Max Models" type="number" variant="outlined" onChange={(e) => handleMaxModelsChange(e)}/>
+            </Box>
+            {/* <label htmlFor="maxModels">Max Models </label>
             <input
               placeholder="Default is None"
               type="number"
@@ -376,9 +470,18 @@ const Developer = () => {
               name="maxModels"
               value={maxModels}
               onChange={(e) => handleMaxModelsChange(e)}
-            />
-            <br></br>
-            <label htmlFor="nfolds">Nfolds </label>
+            /> */}
+            <Box
+              component="form"
+              sx={{
+                '& > :not(style)': { m: 1, width: '25ch' },
+              }}
+              noValidate
+              autoComplete="on"
+            >
+            <TextField id="outlined-number" color="developer" label="nFolds" type="number" variant="outlined" onChange={(e) => handleNfoldsChange(e)}/>
+            </Box>
+            {/* <label htmlFor="nfolds">Nfolds </label>
             <input
               placeholder="Default is -1"
               type="number"
@@ -386,9 +489,8 @@ const Developer = () => {
               name="nfolds"
               value={nfolds}
               onChange={(e) => handleNfoldsChange(e)}
-            />
-            <br></br>
-            <label htmlFor="seed">Seed </label>
+            /> */}
+            {/* <label htmlFor="seed">Seed </label>
             <input
               placeholder="Default is None"
               type="number"
@@ -396,9 +498,49 @@ const Developer = () => {
               name="seed"
               value={seed}
               onChange={(e) => handleSeedChange(e)}
-            />
-            <br></br>
-            <label htmlFor="algos">Algorithms </label>
+            /> */}
+            <Box
+              component="form"
+              sx={{
+                '& > :not(style)': { m: 1, width: '25ch' },
+              }}
+              noValidate
+              autoComplete="on"
+            >
+            <TextField id="outlined-number" color="developer" label="Seed" type="number" variant="outlined" onChange={(e) => handleSeedChange(e)}/>
+            </Box>
+            <Box
+              component="form"
+              sx={{
+                '& > :not(style)': { m: 1, width: '25ch' },
+              }}
+              noValidate
+              autoComplete="on"
+            >
+              <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">Algorithms</InputLabel>
+                
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  multiple
+                  value={selectedAlgos}
+                  label="Algorithms"
+                  onChange={handleAlgoSelectChange}
+                  MenuProps={MenuProps}
+                >{names.map((name) => (
+                  <MenuItem
+                    key={name}
+                    value={name}
+                    style={getStyles(name, selectedAlgos, theme)}
+                  >
+                    {name}
+                  </MenuItem>
+                ))}
+                </Select>
+              </FormControl>
+            </Box>
+            {/* <label htmlFor="algos">Algorithms </label>
             <select multiple name="algos" id="algos" onChange={handleAlgoSelectChange}>
               <option value="GLM">GLM</option>
               <option value="DeepLearning">DeepLearning</option>
@@ -406,7 +548,7 @@ const Developer = () => {
               <option value="GBM">GBM</option>
               <option value="XGBoost">XGBoost</option>
               <option value="StackedEnsemble">StackedEnsemble</option>
-            </select>
+            </select> */}
             <br></br>
             </div>
             <Button style={{ width: "100px", height: "50px", margin: "10px"}} color="success" variant="contained" type="submit"><strong>Train</strong></Button>
@@ -481,28 +623,10 @@ const Developer = () => {
           <img src={heatmap} alt="heatmap" />
         </div>
       )}
-      <div className={styles.predictSection}>
-        <h2>Predict</h2>
-        <form onSubmit={handlePredictSubmit}>
-          <label htmlFor="predictFile">{predictFileLabel}</label>
-          <input
-            type="file"
-            id="predictFile"
-            name="predictFile"
-            onChange={(e) => handlePredictFileChange(e)}
-          />
-          <br />
-            <Button style={{ width: "100px", height: "50px", margin: "10px"}} color="success" variant="contained" type="submit"><strong>PREDICT</strong></Button>
-        </form>
-        {predictLoading && (
-        <div className={styles.loadingSection}>
-          <PropagateLoader color="#1b5e20" size={50} />
-        </div>
-      )}
-      </div>
-
     </div>
+    </ThemeProvider>
   );
+  
 };
 
 export default Developer;

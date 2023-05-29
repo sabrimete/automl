@@ -1,22 +1,21 @@
 .trainSection>h2 {
-  background: linear-gradient(360deg, #FFF 10%, #b7ebb9 100%) ;
   font-size: 48px !important;
+  margin-top: auto;
   font-weight: bold;
-  color: #1b5e20;
+  color: #00695f;
   text-align: center;
 }
 
 .predictSection>h2 {
-  background: linear-gradient(360deg, #FFF 10%, #b7ebb9 100%) ;
+  background: linear-gradient(360deg, #FFF 10%, #33ab9f 100%) ;
   font-size: 48px !important;
   font-weight: bold;
-  color: #1b5e20;
+  color: #00695f;
   text-align: center;
 }
 
 .AutoMLPipeline__container {  
-  margin: 30px 30px;
-  background-color: #FFFFFF;
+  background: linear-gradient(350deg, #FFF 50%, #33ab9f 95%) ;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -185,7 +184,7 @@ transform: rotate(360deg);
 
 .inputs {
   display: flex;
-  justify-content: space-between;
+  padding: auto;
+  margin-left: 100px;
   align-items: center;
-  margin-bottom: 10px;
 }

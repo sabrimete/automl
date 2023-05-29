@@ -163,6 +163,7 @@ transform: rotate(360deg);
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1000;
 }
+
 .body {
   margin: 30px;
   padding: 0;
@@ -198,4 +199,10 @@ transform: rotate(360deg);
   justify-content: space-evenly;
   background-color: #FFFFFF;
   border-radius: 5px;
+}
+
+.images_container {
+  width: 10px;
+  display: flex;
+  justify-content: space-between;
 }
