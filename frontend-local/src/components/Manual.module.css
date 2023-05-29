@@ -1,28 +1,31 @@
-.trainSection>h2 {
-  background: linear-gradient(360deg, #FFF 10%, #e5b9ed 100%) ;
-  font-size: 48px !important;
-  font-weight: bold;
-  color: #7b1fa2;
-  text-align: center;
-}
 .unsupervisedSection>h2 {
-  background: linear-gradient(360deg, #FFF 20%, #76ccf4 100%) ;
   font-size: 48px !important;
+  margin-top: auto;
   font-weight: bold;
-  color: #01579b;
+  color: #27632a;
   text-align: center;
 }
 
 .supervisedSection>h2 {
-  background: linear-gradient(360deg, #FFF 20%, #76ccf4 100%) ;
   font-size: 48px !important;
+  margin-top: auto;
   font-weight: bold;
-  color: #01579b;
+  color: #27632a;
   text-align: center;
 }
 
-.AutoMLPipeline__container {
-  margin: 30px 30px;
+.unsupervisedSection {
+  background: linear-gradient(350deg, #FFF 50%, #6fbf73 95%) ;
+  margin-top: auto;
+  background-color: #FFF;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+}
+
+.supervisedSection {
+  background: linear-gradient(350deg, #FFF 50%, #6fbf73 95%) ;
+  margin-top: auto;
   background-color: #FFF;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -187,10 +190,10 @@ transform: rotate(360deg);
 }
 
 .navmanual {
-  margin-left: 300px;
-  margin-right: 300px;
+  margin-left: 500px;
+  margin-right: 500px;
   background-color: #FFFFFF;
-  border: #1565c0 3px solid;
+  border: #357a38 3px solid;
   border-radius: 5px;
 }
 

@@ -591,6 +591,8 @@ const Developer = () => {
               ))}
             </tbody>
           </table>
+
+          <Button style={{ width: "100px", height: "50px", margin: "10px"}} color="success" variant="contained" type="submit"><strong></strong></Button>
           <button onClick={handleDropColumnsClick}>Drop Selected Columns</button>
           <button onClick={handleHeatmapButtonClick}>Get the Heatmap</button>
         </div>

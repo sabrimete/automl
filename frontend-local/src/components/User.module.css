@@ -6,7 +6,7 @@
   text-align: center;
 }
 .predictSection>h2 {
-  background: linear-gradient(360deg, #FFF 10%, #33c9dc 100%) ;
+  margin-top: auto;
   font-size: 48px !important;
   font-weight: bold;
   color: #008394;

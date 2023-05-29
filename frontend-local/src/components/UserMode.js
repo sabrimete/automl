@@ -24,7 +24,7 @@ const theme = createTheme({
       main: '#4caf50',
     },
     predict: {
-      main: '#8bc34a',
+      main: '#618833',
     },
   },
 });

@@ -1,18 +1,37 @@
 import React, { useState } from "react";
-import styles from './User.module.css';
+import styles from './Predict.module.css';
 import Leaderboard from './Leaderboard';
 import PacmanLoader from "react-spinners/PacmanLoader";
 import PropagateLoader from "react-spinners/PropagateLoader";
 import RingLoader from "react-spinners/RingLoader";
 import Papa from "papaparse";
 import Button from '@mui/material/Button';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import ReactVirtualizedTable from "./VirtualTable";
+import OneTable from "./OneTable";
+
+const theme = createTheme({
+  palette: {
+    user: {
+      // Purple and green play nicely together.
+      main: '#008394',
+    },
+    developer: {
+      // This is green.A700 as hex.
+      main: '#009688',
+    },
+    manual: {
+      // This is green.A700 as hex.
+      main: '#4caf50',
+    },
+    predict: {
+      main: '#618833',
+    },
+  },
+});
 
 const predict_endpoint = 'https://inference-6r72er7ega-uc.a.run.app/predict';
-// const all_models_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/run_names';
-const all_models_endpoint = 'http://localhost:8000/runs';
-// const one_model_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/run_info';
-const one_model_endpoint = 'http://localhost:8000/run_info';
+const one_model_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/run_info';
 const train_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/train';
 const save_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/save_models';
 
@@ -30,6 +49,8 @@ const User = () => {
   const [selectedAlgos, setSelectedAlgos] = useState([]);
   const [leaderboardData, setLeaderboardData] = useState(null);
   const [selectedModels, setSelectedModels] = useState([]);
+  const [allModels, setAllModels] = useState(false);
+  const [oneModel, setOneModel] = useState(false);
   const [trainLoading, setTrainLoading] = useState(false);
   const [predictLoading, setpredictLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
@@ -196,41 +217,15 @@ const User = () => {
   };
 
   const getAllModels = async (e) => {
-    var container = document.getElementById("responseContainer");
     e.preventDefault();
-    // fetch(all_models_endpoint)  // Replace with your actual backend endpoint URL
-    // .then(function(response) {
-    //   return response.json();
-    // })
-    // .then(function(responseData) {
-    //   // Iterate over the response data and create a paragraph for each item
-    //   responseData.forEach(function(item) {
-    //     var paragraph = document.createElement("p");
-    //     paragraph.textContent = item;
-    //     container.appendChild(paragraph);
-    //   });
-    // })
-    // .catch(function(error) {
-    //   console.log('Error:', error);
-    // });
+    setAllModels(true);
+    setOneModel(false);
   };
 
   const getOneModel = async (e) => {
-
-    var cont = document.getElementById("responseModel");
-    console.log(modelId);
     e.preventDefault();
-    const response = await fetch(one_model_endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain'
-      },
-      body: modelId,
-    });
-  
-    console.log(response);
-    const responseData = await response.json();
-    setOneModelData(responseData);
+    setOneModel(true);
+    setAllModels(false);
   };
 
   const saveSelectedModels = async () => {
@@ -254,33 +249,32 @@ const User = () => {
     setSaveLoading(false);
   };
   return (
+    <ThemeProvider theme={theme}>
     <div className={styles.AutoMLPipeline__container}>
       <div className={styles.predictSection}>
         <h2>Predict</h2>
         <div className={styles.predictForm}>
         <form onSubmit={getAllModels}>
         <strong> Get Information of the Models: </strong> <br />
-        <Button style={{ width: "250px", height: "50px", margin: "10px"}} color="secondary" variant="contained" type="submit"><strong>Get All Models</strong></Button>
+        <Button style={{ width: "250px", height: "50px", color:"white", margin: "10px"}} color="predict" variant="contained" type="submit"><strong>Get All Models</strong></Button>
         <div id="responseContainer">
-          <ReactVirtualizedTable></ReactVirtualizedTable>
+          { allModels && <ReactVirtualizedTable/>}
         </div>
         </form>
         <br></br>
         <form onSubmit={getOneModel}>
-          <label htmlFor="modelId"> <strong> Or you can get your model by ID: </strong></label>
-          <input
+          {/* <label htmlFor="modelId"> <strong> Or you can get your model by ID: </strong></label> */}
+          {/* <input
             type="text"
             id="modelId"
             name="modelId"
             value={modelId}
             onChange={(e) => handleModelIdChange(e)}
-          />
+          /> */}
           <br />
-        <Button style={{ width: "250px", height: "50px", margin: "10px"}} color="secondary" variant="contained" type="submit"><strong> Get Model by Id</strong></Button>
+        <Button style={{ width: "250px", height: "50px", color:"white", margin: "10px"}} color="predict" variant="contained" type="submit"><strong> Get Model by Id</strong></Button>
         <div id="responseModel">
-        {oneModelData && (
-        <pre>{JSON.stringify(oneModelData, null, 2)}</pre>
-      )}
+          { oneModelData && <OneTable></OneTable>}
         </div>
         </form>
         </div>
@@ -306,7 +300,7 @@ const User = () => {
           />
           <br />
           
-        <Button style={{ width: "300px", height: "50px", margin: "10px"}} color="secondary" variant="contained" type="submit"><strong>Predict by This Model</strong></Button>
+        <Button style={{ width: "300px", height: "50px", color:"white", margin: "10px"}} color="predict" variant="contained" type="submit"><strong>Predict by This Model</strong></Button>
         </form>
         {predictLoading && (
         <div className={styles.loadingSection}>
@@ -316,6 +310,7 @@ const User = () => {
       </div>
 
     </div>
+    </ThemeProvider>
   );
 };
 

@@ -10,9 +10,9 @@ import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const predict_endpoint = 'https://inference-6r72er7ega-uc.a.run.app/predict';
-const unsupervised_endpoint = 'http://localhost:8000/unsupervised-train-suggest';
-const unsupervised_final_endpoint = 'http://localhost:8000/unsupervised-train-final';
-const supervised_endpoint = 'http://localhost:8000/manual-supervised-train';
+const unsupervised_endpoint = 'http://backend-6r72er7ega-uc.a.run.app/unsupervised-train-suggest';
+const unsupervised_final_endpoint = 'http://backend-6r72er7ega-uc.a.run.app/unsupervised-train-final';
+const supervised_endpoint = 'http://backend-6r72er7ega-uc.a.run.app/manual-supervised-train';
 const save_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/save_models';
 
 const Manual = () => {
@@ -242,7 +242,7 @@ const Manual = () => {
             td.textContent = data[key][i];  // Change from `data[key][0]` to `data[key][i]`
             dataRow.appendChild(td);
         }
-        tbody.appendChild(dataRow);
+        tbody.appendChild(dataRow); 
     }
 
     table.appendChild(tbody);
@@ -258,11 +258,12 @@ const Manual = () => {
   const theme = createTheme({
     palette: {
       primary: {
-        main: '#42a5f5',
+        main: '#27632a',
       },
       secondary: {
-        main: '#42a5f5',
+        main: '#357a38',
       }
+      
     },
   });
 
@@ -329,15 +330,18 @@ const Manual = () => {
   };
   
   return (    
+    <ThemeProvider theme={theme}>
   <div>
     <div className={styles.navmanual}>
       <nav>
-      <ThemeProvider theme={theme}>
+
         <Button style={{color: 'white', margin: 5}} size="small" color="primary" variant="contained" onClick={() => setMode('unsupervised')}>Unsupervised Training</Button>
-        <Button style={{color: 'white', margin: 5}} size="small" color="secondary" variant="contained" onClick={() => setMode('supervised')}>Hyperparameter Optimization</Button>
-        </ThemeProvider>
+        <Button style={{color: 'white', margin: 5}} size="small" color="primary" variant="contained" onClick={() => setMode('supervised')}>Hyperparameter Optimization</Button>
+
       </nav>
     </div>
+
+  <div className="styles.AutoMLPipeline__container">
     {mode === 'unsupervised' && 
       <div className={styles.unsupervisedSection}>
         <h2>TRAIN</h2>
@@ -350,7 +354,7 @@ const Manual = () => {
             onChange={(e) => handleUnsupervisedFileChange(e)}
           />
           <br />
-            <Button style={{ width: "200px", height: "50px", margin: "10px"}} color="info" variant="contained" type="submit"><strong>TRAIN UNSUPERVISED</strong></Button>
+            <Button style={{ width: "200px", height: "50px", margin: "10px"}} color="primary" variant="contained" type="submit"><strong>TRAIN UNSUPERVISED</strong></Button>
         </form>
         {unsupervisedLoading && (
         <div className={styles.loadingSection}>
@@ -436,25 +440,28 @@ const Manual = () => {
             <div className="hyperparam_options">
               <MinimumDistanceSlider title={'ntrees'}  minDistance={10} initValues={[0, 40]} initValue={1} value1={value1} setValue1={setValue1} value={value} setValue={setValue} />
             </div>}
-            <Button onClick={handleSubmit}  style={{ width: "200px", height: "50px", margin: "10px"}} color="info" variant="contained" type="submit"><strong>TRAIN SUPERVISED</strong></Button>
+            <Button onClick={handleSubmit}  style={{ width: "200px", height: "50px", margin: "10px"}} color="primary" variant="contained" type="submit"><strong>TRAIN SUPERVISED</strong></Button>
         </form>
       </div>}
       {mode === 'supervised' && trainLoading && (
         <div className={styles.loadingSection}>
-          <PropagateLoader color="#4A90E2" size={50} />
+          <PropagateLoader color="#27632a" size={50} />
         </div>
         )}
         <div id="responseContainer" className={styles.leaderboardContainer}>
         {isModel && (
-        <Button onClick={saveSelectedModels} style={{ width: "300px", height: "50px", margin: "10px"}} color="info" variant="contained" type="submit"><strong>Save This Model</strong></Button>
+        <Button onClick={saveSelectedModels} style={{ width: "300px", height: "50px", margin: "10px"}} color="primary" variant="contained" type="submit"><strong>Save This Model</strong></Button>
         )}
         {saveLoading && (
         <div className={styles.loadingSection}>
-          <RingLoader color="#4A90E2" size={100} />
+          <RingLoader color="#27632a" size={100} />
         </div>
       )}
         </div>
   </div>
+
+  </div>
+  </ThemeProvider>
   );
 };
 

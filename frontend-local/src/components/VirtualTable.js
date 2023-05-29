@@ -8,6 +8,8 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { TableVirtuoso } from 'react-virtuoso';
 
+const all_models_endpoint = 'http://localhost:8000/runs';
+
 function createData(id, data) {
     return { 
       id, 
@@ -24,13 +26,13 @@ const columns = [
     dataKey: 'name',
   },
   {
-    width: 120,
+    width: 50,
     label: 'Timestamp',
     dataKey: 'timestamp',
     numeric: true,
   },
   {
-    width: 120,
+    width: 40,
     label: 'Train File',
     dataKey: 'trainFile',
   },
@@ -82,18 +84,24 @@ function rowContent(_index, row) {
     </React.Fragment>
   );
 }
+
 export default function ReactVirtualizedTable() {
     const [data, setData] = React.useState([]);
-    const all_models_endpoint = 'http://localhost:8000/runs';
   
     React.useEffect(() => {
       fetch(all_models_endpoint)
       .then(response => response.json())
-      .then(responseData => {
-        const parsedData = [["GBM_1_AutoML_24_20230526_145408", 1685112849.0, "filename"], ["DeepLearning_1_AutoML_24_20230526_145408", 1685112850.0, "filename"], ["GLM_1_AutoML_24_20230526_145408", 1685112848.0, "filename"], ["XRT_1_AutoML_24_20230526_145408", 1685112850.0, "filename"], ["GBM_grid_1_AutoML_24_20230526_145408_model_1", 1685112851.0, "filename"], ["GBM_4_AutoML_24_20230526_145408", 1685112850.0, "filename"], ["DRF_1_AutoML_24_20230526_145408", 1685112850.0, "filename"], ["GBM_5_AutoML_24_20230526_145408", 1685112850.0, "filename"], ["GBM_3_AutoML_24_20230526_145408", 1685112850.0, "filename"], ["GBM_2_AutoML_24_20230526_145408", 1685112850.0, "filename"], ["StackedEnsemble_BestOfFamily_1_AutoML_24_20230526_145408", NaN, "filename"], ["StackedEnsemble_AllModels_1_AutoML_24_20230526_145408", NaN, "filename"], ["XGBoost_1_AutoML_2_20230526_11245", 1685063567.0, "train3.csv"], ["StackedEnsemble_AllModels_1_AutoML_2_20230526_11245", NaN, "train3.csv"], ["StackedEnsemble_BestOfFamily_1_AutoML_1_20230526_11055", NaN, "train3.csv"], ["GBM_1_AutoML_23_20230526_34004", 1685072405.0, "filename"], ["GLM_1_AutoML_23_20230526_34004", 1685072404.0, "filename"], ["XRT_1_AutoML_23_20230526_34004", 1685072406.0, "filename"]];
-        const rows = parsedData.map((item, index) =>
-          createData(index, item)
-        );
+      .then(response => {
+        console.log(typeof response);
+        const formattedString = response.replace(/'/g, '"').replace(/NaN/g, "null");; // Replaces single quotes with double quotes
+
+        const array = JSON.parse(formattedString);
+        const rows = [];
+        for (let index = 0; index < array.length; index++) {
+          const item = array[index];
+          const row = createData(index, item);
+          rows.push(row);
+        }
         setData(rows);
       })
       .catch(error => {
@@ -102,7 +110,7 @@ export default function ReactVirtualizedTable() {
     }, [all_models_endpoint]);
   
     return (
-      <Paper style={{ height: 400, width: '100%' }}>
+      <Paper style={{ height: 400, width: 800}}>
         <TableVirtuoso
           data={data}
           components={VirtuosoTableComponents}
