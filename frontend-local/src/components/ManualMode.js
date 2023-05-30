@@ -2,18 +2,25 @@ import React, { useState, useEffect } from "react";
 import styles from './Manual.module.css';
 import Leaderboard from './Leaderboard';
 import PacmanLoader from "react-spinners/PacmanLoader";
-import MinimumDistanceSlider from './SliderMinimum'
+import Slider from './Slid'
 import PropagateLoader from "react-spinners/PropagateLoader";
 import RingLoader from "react-spinners/RingLoader";
 import Papa from "papaparse";
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import CollapsibleTable from "./CollapsibleTable";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const predict_endpoint = 'https://inference-6r72er7ega-uc.a.run.app/predict';
-const unsupervised_endpoint = 'http://backend-6r72er7ega-uc.a.run.app/unsupervised-train-suggest';
-const unsupervised_final_endpoint = 'http://backend-6r72er7ega-uc.a.run.app/unsupervised-train-final';
-const supervised_endpoint = 'http://backend-6r72er7ega-uc.a.run.app/manual-supervised-train';
-const save_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/save_models';
+const unsupervised_endpoint = 'http://localhost:8000/unsupervised-train-suggest';
+const unsupervised_final_endpoint = 'http://localhost:8000/unsupervised-train-final';
+const supervised_endpoint = 'http://localhost:8000/manual-supervised-train';
+const save_endpoint = 'http://localhost:8000/save_models';
 
 const Manual = () => {
   const [mode, setMode] = React.useState('user');
@@ -44,16 +51,48 @@ const Manual = () => {
   const [silhouetteData, setSilhouetteData] = useState("");
   const [optimalK, setOptimalK] = useState(0);
   const [selectedOption, setSelectedOption] = useState('');
-  const [value1, setValue1] = useState([0, 40]);
-  const [value, setValue] = useState(1);
+  const [slid1, setSlid1] = useState([]);
+  const [slid2, setSlid2] = useState([]);
+  const [slid3, setSlid3] = useState([]);
+  const [step1, setStep1] = useState(null);
+  const [step2, setStep2] = useState(null);
+  const [step3, setStep3] = useState(null);
+  const [outliers, setOutliers] = useState(null);
+  const [clusters, setClusters] = useState(null);
+  const [response, setResponse] = useState(null);
 
-  useEffect(() => {
-    console.log('value1', value1);
-    console.log('value', value);
-  }, [value1, value]);
+  // useEffect(() => {
+  // }, [value1, value]);
 
   const handleChange = (event) => {
-    setSelectedOption(event.target.value);
+    setOptimalK(event.target.value);
+  };
+
+  const handleSelectedChange = (newSelected) => {
+    setSelectedModels(newSelected);
+  };
+
+  const handleSlidChange1 = (newSlid) => {
+    setSlid1(newSlid);
+  };
+
+  const handleSlidChange2 = (newSlid) => {
+    setSlid2(newSlid);
+  };
+  const handleSlidChange3 = (newSlid) => {
+    setSlid3(newSlid);
+  };
+
+  const handleStepChange1 = (newStep) => {
+    setStep1(newStep);
+  };
+
+  const handleStepChange2 = (newStep) => {
+    setStep2(newStep);
+  };
+
+  const handleStepChange3 = (newStep) => {
+    setStep3(newStep);
   };
 
   const renderOptions = () => {
@@ -194,6 +233,14 @@ const Manual = () => {
     setUnsupervisedFile(e.target.files[0]);
   };
 
+  const handleDownloadClusters = (e) => {
+    clusters.click();
+  };
+
+  const handleDownloadOutliers = (e) => {
+    outliers.click();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setTrainLoading(true);
@@ -202,10 +249,22 @@ const Manual = () => {
     formData.append("file", trainFile);
     formData.append("target_string", targetString);
     formData.append("algo", selectedAlgo);
-    formData.append("ntrees_first", value1[0]);
-    formData.append("ntrees_last", value1[1]);
-    formData.append("ntrees_step", value);
-    console.log(selectedAlgo);
+    if(slid1[0] != null && slid1[1] != null && step1 != null){  
+      formData.append("ntrees_first", slid1[0]);
+      formData.append("ntrees_last", slid1[1]);
+      formData.append("ntrees_step", step1);
+    }
+    if(slid2[0] != null && slid2[1] != null && step2 != null){  
+      formData.append("max_depth_first", slid2[0]);
+      formData.append("max_depth_last", slid2[1]);
+      formData.append("max_depth_step", step2);
+    }
+    if(slid3[0] != null && slid3[1] != null && step3 != null){  
+      formData.append("learn_rate_first", slid3[0]);
+      formData.append("learn_rate_last", slid3[1]);
+      formData.append("learn_rate_step", step3);
+    }
+
   
     const response = await fetch(supervised_endpoint, {
       method: "POST",
@@ -213,44 +272,7 @@ const Manual = () => {
     });
 
     const data = await response.json();
-    console.log(data);
-    var container = document.getElementById("responseContainer");
-    container.innerHTML = "";
-    let table = document.createElement('table');
-
-    // Create table header
-    let thead = document.createElement('thead');
-    let headerRow = document.createElement('tr');
-
-    for (let key in data) {
-        let th = document.createElement('th');
-        th.textContent = key;
-        headerRow.appendChild(th);
-    }
-
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    // Create table body
-    let tbody = document.createElement('tbody');
-
-    // Assuming all arrays in `data` are of the same length
-    for (let i = 0; i < Object.keys(data).length; i++) {
-        let dataRow = document.createElement('tr');
-        for (let key in data) {
-            let td = document.createElement('td');
-            td.textContent = data[key][i];  // Change from `data[key][0]` to `data[key][i]`
-            dataRow.appendChild(td);
-        }
-        tbody.appendChild(dataRow); 
-    }
-
-    table.appendChild(tbody);
-    container.appendChild(table);
-
-    // Add the table to the body of the page
-    console.log(data);
-    
+    setResponse(data);
     setTrainLoading(false);
     setIsModel(true);
   };
@@ -296,8 +318,6 @@ const Manual = () => {
     });
 
     const data = await response.json();
-    console.log(optimalK);
-    console.log(data['finalImage'])
     setOptimalK(0);
     if(data['finalImage']){
       setFinalData(data['finalImage']);
@@ -305,8 +325,34 @@ const Manual = () => {
     else {
       setFinalData("");
     }
-    console.log(finalData);
     setunsupervisedLoading(false);
+    const blob = new Blob([JSON.stringify(data['clusters'], null, 2)], {type: "application/json"});
+    const blob2 = new Blob([JSON.stringify(data['outliers'], null, 2)], {type: "application/json"});
+    
+    // Create an object URL for the blob object
+    const url = URL.createObjectURL(blob);
+    const url2 = URL.createObjectURL(blob2);
+    
+    // Create a link element
+    const link = document.createElement('a');
+    const link2 = document.createElement('a');
+    
+    // Set the href and download attributes for the link
+    link.href = url;
+    link2.href = url2;
+    link.download = 'clusters_response.json';
+    link2.download = 'outliers_response.json';
+    
+    setOutliers(link2);
+    setClusters(link);
+    // Append the link to the body
+    // document.body.appendChild(link);
+    
+    // // Simulate click
+    // // link.click();
+    
+    // // Remove the link after download
+    // document.body.removeChild(link);
   };
 
   const saveSelectedModels = async () => {
@@ -316,7 +362,10 @@ const Manual = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(selectedModels),
+      body: JSON.stringify({
+        model_ids: selectedModels,
+        train_file_name: "<your_train_file_name>",
+      }),
     });
 
     if (response.ok) {
@@ -334,10 +383,8 @@ const Manual = () => {
   <div>
     <div className={styles.navmanual}>
       <nav>
-
         <Button style={{color: 'white', margin: 5}} size="small" color="primary" variant="contained" onClick={() => setMode('unsupervised')}>Unsupervised Training</Button>
         <Button style={{color: 'white', margin: 5}} size="small" color="primary" variant="contained" onClick={() => setMode('supervised')}>Hyperparameter Optimization</Button>
-
       </nav>
     </div>
 
@@ -346,19 +393,24 @@ const Manual = () => {
       <div className={styles.unsupervisedSection}>
         <h2>TRAIN</h2>
         <form onSubmit={handleUnsupervisedSubmit}>
-          <label htmlFor="unsupervisedFile"> <strong> Upload Your Train File </strong></label>
-          <input
-            type="file"
-            id="unsupervisedFile"
-            name="unsupervisedFile"
-            onChange={(e) => handleUnsupervisedFileChange(e)}
-          />
+
+        <Box
+          component="form"
+          sx={{
+            '& > :not(style)': { m: 0, width: 'auto', height: 'auto' },
+          }}
+          noValidate
+          autoComplete="off"
+        >
+          <strong> Choose Your Train File</strong> <br></br>
+        <TextField id="filled-basic"  color="primary" type="file" variant="filled" onChange={(e) => handleUnsupervisedFileChange(e)}  />
+        </Box>
           <br />
             <Button style={{ width: "200px", height: "50px", margin: "10px"}} color="primary" variant="contained" type="submit"><strong>TRAIN UNSUPERVISED</strong></Button>
         </form>
         {unsupervisedLoading && (
         <div className={styles.loadingSection}>
-          <PropagateLoader color="#4A90E2" size={50} />
+          <PropagateLoader color="#27632a" size={50} />
         </div>
         )}
         {optimalK != 0 && (
@@ -368,18 +420,52 @@ const Manual = () => {
             <img src={`data:image/jpeg;base64,${silhouetteData}`} style={{ width: '700px', height: 'auto' }} />
           </div>
           <p> Optimal K we found is {optimalK}. <br/> However, you can select a k value between 1 and 10. </p>
-          <select value={selectedOption} onChange={handleChange}>
-            <option value="">Select an option</option>
-            {renderOptions()}
-          </select>
+          <Box
+              component="form"
+              sx={{
+                '& > :not(style)': { m: 1, width: '25ch' },
+              }}
+              noValidate
+              autoComplete="on"
+            >
+          <FormControl>
+          <InputLabel id="demo-simple-select-label">K Value</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={optimalK}
+            label="OptimalK"
+            onChange={handleChange}
+          >
+            <MenuItem value={1}>1</MenuItem>
+            <MenuItem value={2}>2</MenuItem>
+            <MenuItem value={3}>3</MenuItem>
+            <MenuItem value={4}>4</MenuItem>
+            <MenuItem value={5}>5</MenuItem>
+            <MenuItem value={6}>6</MenuItem>
+            <MenuItem value={7}>7</MenuItem>
+            <MenuItem value={8}>8</MenuItem>
+            <MenuItem value={9}>9</MenuItem>
+            <MenuItem value={10}>10</MenuItem>
+          </Select>
+        </FormControl>
+        </Box>
           <form onSubmit={handleUnsupervisedFinal}>
-          <Button style={{ width: "200px", height: "50px", margin: "10px"}} color="info" variant="contained" type="submit"><strong>GET THE FINAL</strong></Button>
+          <Button style={{ width: "200px", height: "50px", margin: "10px"}} color="primary" variant="contained" type="submit"><strong>GET THE FINAL</strong></Button>
           </form>
           </div>
         )}
         {finalData!= "" && (
-        <div className={styles.images_container}>
-          <img src={`data:image/jpeg;base64,${finalData}`} alt='final_image' style={{ width: '1000px', height: 'auto' }} />
+        <div className={styles.images_container_final}>
+          <img src={`data:image/jpeg;base64,${finalData}`} alt='final_image' style={{ alignContent:'center', width: '1000px', height: 'auto' }} />
+          <div>
+          <form onSubmit={handleDownloadClusters}>
+          <Button style={{ width: "200px", height: "50px", margin: "10px"}} color="primary" variant="contained" type="submit"><strong>Download Clusters</strong></Button>
+          </form>
+          <form onSubmit={handleDownloadOutliers}>
+          <Button style={{ width: "200px", height: "50px", margin: "10px"}} color="primary" variant="contained" type="submit"><strong>Download Outliers</strong></Button>
+          </form>
+          </div>
         </div>)
         }
       </div>}
@@ -387,19 +473,30 @@ const Manual = () => {
       <div className={styles.supervisedSection}>
         <h2>TRAIN</h2>
         <form onSubmit={handleSubmit}>
-        <label htmlFor="trainFile"> <strong>Choose Your Train File  </strong></label>
+        <Box
+          component="form"
+          sx={{
+            '& > :not(style)': { m: 0, width: 'auto', height: 'auto' },
+          }}
+          noValidate
+          autoComplete="off"
+        >
+          <strong> Choose Your Train File</strong> <br></br>
+        <TextField id="filled-basic"  color="developer" type="file" variant="filled" onChange={(e) => handleTrainFileChange(e)}  />
+        </Box>
+        {/* <label htmlFor="trainFile"> <strong>Choose Your Train File  </strong></label>
         <input
           type="file"
           id="trainFile"
           name="trainFile"
-          onChange={(e) => handleTrainFileChange          (e)}
-          />
-          
+          onChange={(e) => handleTrainFileChange(e)}
+          /> */}
           <label htmlFor="targetString">
             {columnNames.length > 0
-              ? "Select the target column! "
-              : "Upload your train.csv file first! "}
+              ? <strong>Select the target column </strong>
+              : <strong>Upload your train.csv file first! </strong>}
           </label>
+          <br></br>
           {columnNames.length > 0 ? (
           <select
             id="targetString"
@@ -425,27 +522,46 @@ const Manual = () => {
         )}
             <br/>
             <br/>
-            <label htmlFor="algos"><strong>Select Your Supervised Algorithm</strong> </label>
-            <br/>
-            <select name="algos" id="algos" value={selectedAlgo} onChange={handleAlgoSelectChange}>
-              <option value="glm">GLM</option>
-              <option value="rf">Random Forest</option>
-              <option value="gbm">GBM</option>
-              <option value="xgb">XGBoost</option>
-            </select>
-            <br></br>
-            <br></br>
+            <Box
+              component="form"
+              sx={{
+                '& > :not(style)': { m: 1, width: '25ch' },
+              }}
+              noValidate
+              autoComplete="on"
+            >
+            <FormControl>
+              <InputLabel id="demo-simple-select-label">Algorithm</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={selectedAlgo}
+                label="SelectedAlgo"
+                onChange={handleAlgoSelectChange}
+              >
+                <MenuItem value={"glm"}>GLM</MenuItem>
+                <MenuItem value={"rf"}>Random Forest</MenuItem>
+                <MenuItem value={"gbm"}>GBM</MenuItem>
+                <MenuItem value={"xgb"}>XGBoost</MenuItem>
+              </Select>
+              
+            </FormControl>
+            </Box>
             <br></br>
             {selectedAlgo == "gbm" && 
             <div className="hyperparam_options">
-              <MinimumDistanceSlider title={'ntrees'}  minDistance={10} initValues={[0, 40]} initValue={1} value1={value1} setValue1={setValue1} value={value} setValue={setValue} />
+              <Slider title={'ntrees'}  min={0} max={50} step={1} onSlidChange={handleSlidChange1} onStepChange={handleStepChange1}/>
+              <Slider title={'max_depth'}  min={0} max={50} step={1} onSlidChange={handleSlidChange2} onStepChange={handleStepChange2}/>
+              <Slider title={'learn_rate'}  min={0.0} max={0.5} step={0.01} onSlidChange={handleSlidChange3} onStepChange={handleStepChange3}/>
+
             </div>}
             <Button onClick={handleSubmit}  style={{ width: "200px", height: "50px", margin: "10px"}} color="primary" variant="contained" type="submit"><strong>TRAIN SUPERVISED</strong></Button>
         </form>
+        {response!=null && <CollapsibleTable response={response} onSelectChange={handleSelectedChange}></CollapsibleTable>}
       </div>}
       {mode === 'supervised' && trainLoading && (
         <div className={styles.loadingSection}>
-          <PropagateLoader color="#27632a" size={50} />
+          <PacmanLoader color="#27632a" size={50} />
         </div>
         )}
         <div id="responseContainer" className={styles.leaderboardContainer}>

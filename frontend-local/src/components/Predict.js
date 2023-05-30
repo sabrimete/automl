@@ -263,18 +263,18 @@ const User = () => {
         </form>
         <br></br>
         <form onSubmit={getOneModel}>
-          {/* <label htmlFor="modelId"> <strong> Or you can get your model by ID: </strong></label> */}
-          {/* <input
+          <label htmlFor="modelId"> <strong> Or you can get your model by ID: </strong></label>
+          <input
             type="text"
             id="modelId"
             name="modelId"
             value={modelId}
             onChange={(e) => handleModelIdChange(e)}
-          /> */}
+          />
           <br />
         <Button style={{ width: "250px", height: "50px", color:"white", margin: "10px"}} color="predict" variant="contained" type="submit"><strong> Get Model by Id</strong></Button>
         <div id="responseModel">
-          { oneModelData && <OneTable></OneTable>}
+          { oneModel && <OneTable  modelId={modelId}></OneTable> }
         </div>
         </form>
         </div>

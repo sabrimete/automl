@@ -190,11 +190,8 @@ transform: rotate(360deg);
 }
 
 .navmanual {
-  margin-left: 500px;
-  margin-right: 500px;
-  background-color: #FFFFFF;
-  border: #357a38 3px solid;
   border-radius: 5px;
+  background-image: url('/Users/basakonder/Desktop/automl/frontend-local/src/assets/header.png');
 }
 
 .predictForm {

@@ -50,10 +50,11 @@ export default function MinimumDistanceSlider({title, minDistance, initValues, i
       <Grid container spacing={2} alignItems="center">
       <Grid item xs>
       <Slider
+      
         getAriaLabel={() => 'Minimum distance'}
         value={value1}
         onChange={handleChange1}
-        valueLabelDisplay="auto"
+        valueLabelDisplay="on"
         getAriaValueText={valuetext}
         disableSwap
       />

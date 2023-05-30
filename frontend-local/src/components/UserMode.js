@@ -155,7 +155,10 @@ const User = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(selectedModels),
+      body: JSON.stringify({
+        model_ids: selectedModels,
+        train_file_name: "filename",
+      }),
     });
 
     if (response.ok) {
