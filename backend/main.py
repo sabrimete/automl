@@ -76,11 +76,6 @@ def increment_array_float(first, last, increment):
 
 @app.post("/save_models")
 async def save_models(model_ids: list[str] = Body(...), train_file_name: str = Body(...)):
-    global global_leaderboard
-
-    if global_leaderboard is None:
-        return {"message": "No leaderboard available"}
-
     # Create MLflow experiment
     experiment_name = 'deneme' + str(random.randint(1, 1000000))
     try:
@@ -97,8 +92,9 @@ async def save_models(model_ids: list[str] = Body(...), train_file_name: str = B
     print(f"Artifact Location: {experiment.artifact_location}")
     print(f"Lifecycle_stage: {experiment.lifecycle_stage}")
     print(f"Tracking uri: {mlflow.get_tracking_uri()}")
-
+ 
     for model_id in model_ids:
+        print(model_id)
         with mlflow.start_run():
             model = h2o.get_model(model_id)
             mlflow.set_tag("mlflow.runName", model_id)
@@ -109,7 +105,9 @@ async def save_models(model_ids: list[str] = Body(...), train_file_name: str = B
             for metric in metrics_list:
                 if hasattr(model, metric):
                     try:
-                        metrics[metric] = getattr(model, metric)()
+                        temp_metric = getattr(model, metric)()
+                        if isinstance(temp_metric, (float,int)):
+                            metrics[metric] = temp_metric
                     except Exception:
                         pass
             
@@ -139,7 +137,7 @@ async def save_models(model_ids: list[str] = Body(...), train_file_name: str = B
 
         # Perform any action you want with the selected models
         # For example, you can save the models to a file or database
-    return {"message": model_uri}
+    return {"message": "success"}
 
 
 @app.get("/runs")
@@ -149,7 +147,7 @@ async def get_runs():
     runs = runs[runs['status'] != 'FAILED']
     runs = runs.to_dict('records')
     rows = [[run["tags.mlflow.runName"], run["metrics.timestamp"], run["tags.train_file"]] for run in runs]
-    return rows
+    return json.dumps(rows)
 
 
 @app.post("/run_info")
@@ -449,7 +447,6 @@ async def manualSupervisedTrain(request: Request):
     algo = form_data.get("algo")
     response = form_data.get("target_string")
     predictors = [col for col in file.col_names if col != response]
-
     # Split the data into training and validation sets
     train, valid = file.split_frame(ratios=[0.7], seed=1234)
 
@@ -461,6 +458,8 @@ async def manualSupervisedTrain(request: Request):
         "learn_rate": increment_array_float(form_data.get("learn_rate_first"), form_data.get("learn_rate_last"),
                                             form_data.get("learn_rate_step")) or [0.1, 0.2, 0.3],
     }
+    if(form_data.get("ntrees_first")):
+        print(form_data.get("ntrees_first"))
 
     glmGridSearchParameters = {
         "alpha": increment_array_float(form_data.get("alpha_first"), form_data.get("alpha_last"),
@@ -639,4 +638,7 @@ async def main():
     """
     return HTMLResponse(content=content)
 
+# import uvicorn
+# if __name__ == "__main__":
+#     uvicorn.run(app, host="localhost", port=8000)
 
