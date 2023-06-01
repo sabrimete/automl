@@ -612,11 +612,11 @@ async def manualSupervisedTrain(request: Request):
         for i in range(len(gridSearch.get_grid(sort_by='rmse', decreasing=False).models)):
             model = gridSearch.get_grid(sort_by='rmse', decreasing=False).models[i]
             response["model_id"][str(i)] = model.model_performance(valid)._metric_json["model"]["name"]
-            response["rmse"][str(i)] = model.rmse()
-            response["mse"][str(i)] = model.mse()
-            response["mae"][str(i)] = model.mae()
-            response["rmsle"][str(i)] = model.rmsle()
-            response["mean_residual_deviance"][str(i)] = model.mean_residual_deviance()
+            response["rmse"][str(i)] = model._model_json['output']['validation_metrics']._metric_json['RMSE']
+            response["mse"][str(i)] = model._model_json['output']['validation_metrics']._metric_json['MSE']
+            response["mae"][str(i)] = model._model_json['output']['validation_metrics']._metric_json['mae']
+            response["rmsle"][str(i)] = model._model_json['output']['validation_metrics']._metric_json['rmsle']
+            response["mean_residual_deviance"][str(i)] = model._model_json['output']['validation_metrics']._metric_json['mean_residual_deviance']
             response["params"][str(i)] = {}
             response["params"][str(i)]["ntrees"] = model.actual_params['ntrees']
             response["params"][str(i)]["max_depth"] = model.actual_params['max_depth']
