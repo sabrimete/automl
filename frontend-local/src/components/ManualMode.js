@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import styles from './Manual.module.css';
-import Leaderboard from './Leaderboard';
 import PacmanLoader from "react-spinners/PacmanLoader";
 import Slider from './Slid'
 import PropagateLoader from "react-spinners/PropagateLoader";
@@ -59,7 +58,9 @@ const Manual = () => {
   const [step3, setStep3] = useState(null);
   const [outliers, setOutliers] = useState(null);
   const [clusters, setClusters] = useState(null);
-  const [response, setResponse] = useState(null);
+  const [response, setResponse] = useState(null);  
+  const [clustersDownloadLink, setClustersDownloadLink] = useState(null);
+  const [outliersDownloadLink, setOutliersDownloadLink] = useState(null);
 
   // useEffect(() => {
   // }, [value1, value]);
@@ -234,13 +235,25 @@ const Manual = () => {
   };
 
   const handleDownloadClusters = (e) => {
-    clusters.click();
+    const blob = new Blob([clusters], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "clusters.json";
+    document.body.appendChild(link);
+    link.click();
   };
-
+  
   const handleDownloadOutliers = (e) => {
-    outliers.click();
+    const blob = new Blob([outliers], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "outliers.json";
+    document.body.appendChild(link);
+    link.click();
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setTrainLoading(true);
@@ -249,21 +262,69 @@ const Manual = () => {
     formData.append("file", trainFile);
     formData.append("target_string", targetString);
     formData.append("algo", selectedAlgo);
-    if(slid1[0] != null && slid1[1] != null && step1 != null){  
-      formData.append("ntrees_first", slid1[0]);
-      formData.append("ntrees_last", slid1[1]);
-      formData.append("ntrees_step", step1);
+
+    if(selectedAlgo == "gbm") {
+      if(slid1[0] != null && slid1[1] != null && step1 != null){  
+        formData.append("ntrees_first", slid1[0]);
+        formData.append("ntrees_last", slid1[1]);
+        formData.append("ntrees_step", step1);
+      }
+      if(slid2[0] != null && slid2[1] != null && step2 != null){  
+        formData.append("max_depth_first", slid2[0]);
+        formData.append("max_depth_last", slid2[1]);
+        formData.append("max_depth_step", step2);
+      }
+      if(slid3[0] != null && slid3[1] != null && step3 != null){  
+        formData.append("learn_rate_first", slid3[0]);
+        formData.append("learn_rate_last", slid3[1]);
+        formData.append("learn_rate_step", step3);
+      }
     }
-    if(slid2[0] != null && slid2[1] != null && step2 != null){  
-      formData.append("max_depth_first", slid2[0]);
-      formData.append("max_depth_last", slid2[1]);
-      formData.append("max_depth_step", step2);
+
+    if(selectedAlgo == "xgb") {
+      if(slid1[0] != null && slid1[1] != null && step1 != null){  
+        formData.append("ntrees_first", slid1[0]);
+        formData.append("ntrees_last", slid1[1]);
+        formData.append("ntrees_step", step1);
+      }
+      if(slid2[0] != null && slid2[1] != null && step2 != null){  
+        formData.append("max_depth_first", slid2[0]);
+        formData.append("max_depth_last", slid2[1]);
+        formData.append("max_depth_step", step2);
+      }
+      if(slid3[0] != null && slid3[1] != null && step3 != null){  
+        formData.append("learn_rate_first", slid3[0]);
+        formData.append("learn_rate_last", slid3[1]);
+        formData.append("learn_rate_step", step3);
+      }
     }
-    if(slid3[0] != null && slid3[1] != null && step3 != null){  
-      formData.append("learn_rate_first", slid3[0]);
-      formData.append("learn_rate_last", slid3[1]);
-      formData.append("learn_rate_step", step3);
+
+    if(selectedAlgo == "glm") {
+      if(slid1[0] != null && slid1[1] != null && step1 != null){  
+        formData.append("alpha_first", slid1[0]);
+        formData.append("alpha_last", slid1[1]);
+        formData.append("alpha_step", step1);
+      }
+      if(slid2[0] != null && slid2[1] != null && step2 != null){  
+        formData.append("lambda_first", slid2[0]);
+        formData.append("lambda_last", slid2[1]);
+        formData.append("lambda_step", step2);
+      }
     }
+
+    if(selectedAlgo == "rf") {
+      if(slid1[0] != null && slid1[1] != null && step1 != null){  
+        formData.append("ntrees_first", slid1[0]);
+        formData.append("ntrees_last", slid1[1]);
+        formData.append("ntrees_step", step1);
+      }
+      if(slid2[0] != null && slid2[1] != null && step2 != null){  
+        formData.append("max_depth_first", slid2[0]);
+        formData.append("max_depth_last", slid2[1]);
+        formData.append("max_depth_step", step2);
+      }
+    }
+
 
   
     const response = await fetch(supervised_endpoint, {
@@ -326,33 +387,8 @@ const Manual = () => {
       setFinalData("");
     }
     setunsupervisedLoading(false);
-    const blob = new Blob([JSON.stringify(data['clusters'], null, 2)], {type: "application/json"});
-    const blob2 = new Blob([JSON.stringify(data['outliers'], null, 2)], {type: "application/json"});
-    
-    // Create an object URL for the blob object
-    const url = URL.createObjectURL(blob);
-    const url2 = URL.createObjectURL(blob2);
-    
-    // Create a link element
-    const link = document.createElement('a');
-    const link2 = document.createElement('a');
-    
-    // Set the href and download attributes for the link
-    link.href = url;
-    link2.href = url2;
-    link.download = 'clusters_response.json';
-    link2.download = 'outliers_response.json';
-    
-    setOutliers(link2);
-    setClusters(link);
-    // Append the link to the body
-    // document.body.appendChild(link);
-    
-    // // Simulate click
-    // // link.click();
-    
-    // // Remove the link after download
-    // document.body.removeChild(link);
+    setClusters(data['clusters']);
+    setOutliers(data['outliers']);
   };
 
   const saveSelectedModels = async () => {
@@ -364,7 +400,7 @@ const Manual = () => {
       },
       body: JSON.stringify({
         model_ids: selectedModels,
-        train_file_name: "<your_train_file_name>",
+        train_file_name: trainFileLabel,
       }),
     });
 
@@ -550,10 +586,25 @@ const Manual = () => {
             <br></br>
             {selectedAlgo == "gbm" && 
             <div className="hyperparam_options">
-              <Slider title={'ntrees'}  min1={0} max1={50} step1={1} min2={1} max2={49} step2={5} onSlidChange={handleSlidChange1} onStepChange={handleStepChange1}/>
-              <Slider title={'max_depth'}  min1={0} max1={50} step1={1} min2={1} max2={49} step2={5} onSlidChange={handleSlidChange2} onStepChange={handleStepChange2}/>
+              <Slider title={'ntrees'}  min1={0} max1={50} step1={1} min2={5} max2={49} step2={1} onSlidChange={handleSlidChange1} onStepChange={handleStepChange1}/>
+              <Slider title={'max_depth'}  min1={0} max1={50} step1={1} min2={5} max2={49} step2={1} onSlidChange={handleSlidChange2} onStepChange={handleStepChange2}/>
               <Slider title={'learn_rate'}  min1={0.0} max1={0.5} step1={0.01} min2={0.01} max2={0.49} step2={0.01} onSlidChange={handleSlidChange3} onStepChange={handleStepChange3}/>
-
+            </div>}
+            {selectedAlgo == "glm" && 
+            <div className="hyperparam_options">
+              <Slider title={'alpha'}  min1={0.0} max1={0.5} step1={0.01} min2={0.01} max2={0.49} step2={0.01} onSlidChange={handleSlidChange1} onStepChange={handleStepChange1}/>
+              <Slider title={'lambda'}  min1={0.0} max1={0.5} step1={0.01} min2={0.01} max2={0.49} step2={0.01} onSlidChange={handleSlidChange2} onStepChange={handleStepChange2}/>
+            </div>}
+            {selectedAlgo == "rf" && 
+            <div className="hyperparam_options">
+              <Slider title={'ntrees'}  min1={0} max1={50} step1={1} min2={5} max2={49} step2={1} onSlidChange={handleSlidChange1} onStepChange={handleStepChange1}/>
+              <Slider title={'max_depth'}  min1={0} max1={50} step1={1} min2={5} max2={49} step2={1} onSlidChange={handleSlidChange2} onStepChange={handleStepChange2}/>
+            </div>}
+            {selectedAlgo == "xgb" && 
+            <div className="hyperparam_options">
+              <Slider title={'ntrees'}  min1={0} max1={50} step1={1} min2={5} max2={49} step2={1} onSlidChange={handleSlidChange1} onStepChange={handleStepChange1}/>
+              <Slider title={'max_depth'}  min1={0} max1={50} step1={1} min2={5} max2={49} step2={1} onSlidChange={handleSlidChange2} onStepChange={handleStepChange2}/>
+              <Slider title={'learn_rate'}  min1={0.0} max1={0.5} step1={0.01} min2={0.01} max2={0.49} step2={0.01} onSlidChange={handleSlidChange3} onStepChange={handleStepChange3}/>
             </div>}
             <Button onClick={handleSubmit}  style={{ width: "200px", height: "50px", margin: "10px"}} color="primary" variant="contained" type="submit"><strong>TRAIN SUPERVISED</strong></Button>
         </form>
@@ -566,7 +617,7 @@ const Manual = () => {
         )}
         <div id="responseContainer" className={styles.leaderboardContainer}>
         {isModel && (
-        <Button onClick={saveSelectedModels} style={{ width: "300px", height: "50px", margin: "10px"}} color="primary" variant="contained" type="submit"><strong>Save This Model</strong></Button>
+        <Button onClick={saveSelectedModels} style={{ width: "300px", height: "50px", margin: "10px"}} color="primary" variant="contained" type="submit"><strong>Save Selected Models</strong></Button>
         )}
         {saveLoading && (
         <div className={styles.loadingSection}>

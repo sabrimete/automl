@@ -8,7 +8,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { TableVirtuoso } from 'react-virtuoso';
 
-const all_models_endpoint = 'http://localhost:8000/runs';
+const all_models_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/runs';
 
 function createData(id, data) {
     return { 
@@ -21,7 +21,7 @@ function createData(id, data) {
 
 const columns = [
   {
-    width: 200,
+    width: 250,
     label: 'Name',
     dataKey: 'name',
   },
@@ -71,6 +71,21 @@ function fixedHeaderContent() {
 }
 
 function rowContent(_index, row) {
+  const timestamp = new Date(row.timestamp * 1000)
+  console.log(timestamp);
+  const day = String(timestamp.getDate()).padStart(2, '0');
+  const month = String(timestamp.getMonth() + 1).padStart(2, '0'); // Month is zero-based
+  const year = timestamp.getFullYear();
+  console.log(day,month,year);
+
+  // Extract the time components
+  let hours = timestamp.getHours();
+  const minutes = String(timestamp.getMinutes()).padStart(2, '0');
+  const time = `${hours}:${minutes}`;
+
+  // Construct the formatted timestamp
+  const formattedTimestamp = `${day}/${month}/${year}, ${time}`;
+  console.log(formattedTimestamp);
   return (
     <React.Fragment>
       {columns.map((column) => (
@@ -78,7 +93,7 @@ function rowContent(_index, row) {
           key={column.dataKey}
           align={column.numeric || false ? 'right' : 'left'}
         >
-          {row[column.dataKey]}
+          {column.dataKey === 'timestamp' ? formattedTimestamp : row[column.dataKey]}
         </TableCell>
       ))}
     </React.Fragment>

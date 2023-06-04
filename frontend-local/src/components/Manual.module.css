@@ -190,8 +190,12 @@ transform: rotate(360deg);
 }
 
 .navmanual {
-  border-radius: 5px;
-  /* background-image: url('/Users/basakonder/Desktop/automl/frontend-local/src/assets/header.png'); */
+  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('/Users/basakonder/Desktop/automl/frontend-local/src/assets/header2.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  margin-top: -8px;
+  box-sizing: border-box;
 }
 
 .predictForm {
@@ -203,6 +207,7 @@ transform: rotate(360deg);
 
 .images_container {
   width: 10px;
+  margin-left: 50px;
   display: flex;
   justify-content: space-between;
 }

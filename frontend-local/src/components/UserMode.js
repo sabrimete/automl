@@ -33,6 +33,7 @@ const train_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/train';
 const save_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/save_models';
 
 const User = () => {
+  const [trainFileLabel, setTrainFileLabel] = useState("file");
   const [trainFile, setTrainFile] = useState(null);
   const [targetString, setTargetString] = useState("");
   const [leaderboardData, setLeaderboardData] = useState(null);
@@ -102,6 +103,7 @@ const User = () => {
 
   const handleTrainFileChange = (e) => {
     setTrainFile(e.target.files[0]);
+    setTrainFileLabel(e.target.files[0].name);
     const fileReader = new FileReader();
     fileReader.onload = async (event) => {
     const fileContent = event.target.result;
@@ -157,7 +159,7 @@ const User = () => {
       },
       body: JSON.stringify({
         model_ids: selectedModels,
-        train_file_name: "filename",
+        train_file_name: trainFileLabel,
       }),
     });
 

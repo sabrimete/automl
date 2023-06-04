@@ -17,14 +17,20 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
-import headerBackground from "../assets/header.jpg";
+import headerBackground from "../assets/header2.jpg";
 import cobraLogo from "../assets/cobra-removebg-preview.png";
 import { makeStyles } from "@material-ui/core/styles";
 import { withTheme } from '@emotion/react';
 
 const useStyles = makeStyles((theme) => ({
   header: {
-    backgroundImage: `url(${headerBackground})`,
+    backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${headerBackground})`,
+    backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center',
+    paddingTop: '5px',
+    paddingDown: '5px',
+    boxSizing: 'border-box',
   },
   logo: {
     backgroundImage: `url(${cobraLogo})`,

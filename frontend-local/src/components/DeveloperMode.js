@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styles from './Developer.module.css';
-import Leaderboard from './Leaderboard';
+import Leaderboard from './Leaderboard2';
+import Leaderboard3 from './Leaderboard3';
 import PacmanLoader from "react-spinners/PacmanLoader";
 import PropagateLoader from "react-spinners/PropagateLoader";
 import RingLoader from "react-spinners/RingLoader";
@@ -127,16 +128,16 @@ const Developer = () => {
     }
   };
 
-  const handleDropColumnsClick = () => {
+  const handleDropColumnsClick = (selected) => {
     // Filter out the dropped columns from columnNames
     const updatedColumnNames = columnNames.filter(
-      (columnName) => !columnsToDrop.has(columnName)
+      (columnName) => !selected.includes(columnName)
     );
     setColumnNames(updatedColumnNames);
   
     // Filter out the dropped columns from columnInsights
     const updatedColumnInsights = columnInsights.filter(
-      (insight) => !columnsToDrop.has(insight.name)
+      (insight) => !selected.includes(insight.name)
     );
     setColumnInsights(updatedColumnInsights);
   
@@ -147,7 +148,7 @@ const Developer = () => {
       const parsedData = Papa.parse(fileContent, { header: true });
       const filteredData = parsedData.data.map((row) => {
         const newRow = { ...row };
-        columnsToDrop.forEach((col) => {
+        selected.forEach((col) => {
           delete newRow[col];
         });
         return newRow;
@@ -221,6 +222,8 @@ const Developer = () => {
     }));
   
     setColumnInsights(result);
+    console.log(result);
+    console.log(columnInsights);
   };
 
   const handleTrainFileChange = (e) => {
@@ -351,7 +354,10 @@ const Developer = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(selectedModels),
+      body: JSON.stringify({
+        model_ids: selectedModels,
+        train_file_name: trainFileLabel,
+      }),
     });
 
     if (response.ok) {
@@ -488,9 +494,24 @@ const Developer = () => {
             </Box>
             <br></br>
             </div>
-            <Button style={{ width: "100px", height: "50px", margin: "10px"}} color="success" variant="contained" type="submit"><strong>Train</strong></Button>
+            <Button style={{ width: "100px", height: "50px", margin: "10px", color:"white"}} color="developer" variant="contained" type="submit"><strong>Train</strong></Button>
         </form>
         {columnInsights.length > 0 && (
+        <div className={styles.leaderboardContainer}>
+          <Leaderboard3
+            columnInsight={columnInsights}
+            targetString={targetString}
+            handleDropColumnsClick={handleDropColumnsClick}
+            handleHeatmapButtonClick={handleHeatmapButtonClick}
+          />
+        {saveLoading && (
+        <div className={styles.loadingSection}>
+          <RingLoader color="#00695f" size={100} />
+        </div>
+      )}
+        </div>
+      )}
+        {/* {columnInsights.length > 0 && (
         <div className={styles.columnInsights}>
           <h3>Column Insights</h3>
           <table>
@@ -529,15 +550,18 @@ const Developer = () => {
             </tbody>
           </table>
 
-          <Button style={{ width: "100px", height: "50px", margin: "10px"}} color="success" variant="contained" type="submit"><strong></strong></Button>
-          <button onClick={handleDropColumnsClick}>Drop Selected Columns</button>
-          <button onClick={handleHeatmapButtonClick}>Get the Heatmap</button>
+          {/* <Button style={{ width: "100px", height: "50px", margin: "10px", color: "white"}} color="success" variant="contained" type="submit"><strong>Save Selected Models</strong></Button> */}
+          {/* <Button variant="contained" style={{ width: "250px", height: "50px", backgroundColor: '#00695f', marginTop: '10px', marginRight: '20px' }} onClick={handleDropColumnsClick}>
+            Drop Selected Columns
+          </Button>
+          <Button variant="contained" style={{ width: "220px", height: "50px", backgroundColor: '#00695f', marginTop: '10px', marginLeft: '20px'  }} onClick={handleHeatmapButtonClick}>
+            Get the Heatmap
+          </Button>
         </div>
-      )}
-
+      )} */}
         {trainLoading && (
         <div className={styles.loadingSection}>
-          <PacmanLoader color="#1b5e20" size={50} />
+          <PacmanLoader color="#00695f" size={50} />
         </div>
       )}
       </div>
@@ -552,7 +576,7 @@ const Developer = () => {
           />
         {saveLoading && (
         <div className={styles.loadingSection}>
-          <RingLoader color="#1b5e20" size={100} />
+          <RingLoader color="#00695f" size={100} />
         </div>
       )}
         </div>
@@ -562,7 +586,7 @@ const Developer = () => {
           <img src={heatmap} alt="heatmap" />
         </div>
       )}
-    </div>
+      </div>
     </ThemeProvider>
   );
   
