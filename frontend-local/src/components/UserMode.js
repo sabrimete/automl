@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styles from './User.module.css';
-import Leaderboard from './Leaderboard';
+import Leaderboard from './Leaderboard2';
 import PacmanLoader from "react-spinners/PacmanLoader";
 import RingLoader from "react-spinners/RingLoader";
 import Papa from "papaparse";
@@ -188,13 +188,6 @@ const User = () => {
           <strong> Choose Your Train File</strong> <br></br>
         <TextField id="filled-basic"  color="developer" type="file" variant="filled" onChange={(e) => handleTrainFileChange(e)}  />
         </Box>
-        {/* <label htmlFor="trainFile"> <strong>Choose Your Train File  </strong></label>
-        <input
-          type="file"
-          id="trainFile"
-          name="trainFile"
-          onChange={(e) => handleTrainFileChange(e)}
-          /> */}
           <label htmlFor="targetString">
             {columnNames.length > 0
               ? <strong>Select the target column </strong>

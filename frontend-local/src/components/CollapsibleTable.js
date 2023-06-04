@@ -60,7 +60,7 @@ const VirtuosoTableComponents = {
 
 const columns = [
   {
-    width: 1,
+    width: 30,
     label: 'select',
     dataKey: 'select',
   },
@@ -173,7 +173,7 @@ export default function CollapsibleTable({response, onSelectChange}) {
     const rowTemp = createData(row);
     rows.push(rowTemp);
   }
-
+  
   function renderParamsTable(params) {
     return (
       <Table>
@@ -195,7 +195,7 @@ export default function CollapsibleTable({response, onSelectChange}) {
     const isExpanded = isRowExpanded(row.model_id);
     return (
       <React.Fragment>
-        <TableCell padding="checkbox" style={{ width: 100}}>
+        <TableCell padding="checkbox" style={{ width: columns[0].width }}>
           <Checkbox
             color="primary"
             onClick={(event) => handleSelect(event, row.model_id)}
@@ -205,10 +205,13 @@ export default function CollapsibleTable({response, onSelectChange}) {
         {columns.slice(1).map((column) => (
           <TableCell
             key={column.dataKey}
-            align={column.numeric || false ? 'right' : 'left'}
-            style={{ width: column.width }}
+            align={column.numeric || false ? "right" : "left"}
+            style={{
+              width: column.width,
+              padding: "16px",
+            }}
           >
-            {row[column.dataKey]}
+            <Box width="100%">{row[column.dataKey]}</Box>
           </TableCell>
         ))}
         <TableCell padding="checkbox" style={{ width: columns[columns.length - 1].width }}>
@@ -217,18 +220,54 @@ export default function CollapsibleTable({response, onSelectChange}) {
             size="small"
             onClick={() => handleRowExpand(row.model_id)}
           >
-            {isExpanded ? (
-              <KeyboardArrowUpIcon />
-            ) : (
-              <KeyboardArrowDownIcon />
-            )}
+            {isExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
         </TableCell>
       </React.Fragment>
     );
   }
+  
+  // function rowContent(_index, row) {
+  //   const isExpanded = isRowExpanded(row.model_id);
+  //   return (
+  //     <React.Fragment>
+  //       <TableCell padding="checkbox" style={{ width: columns[0].width }}>
+  //         <Checkbox
+  //           color="primary"
+  //           onClick={(event) => handleSelect(event, row.model_id)}
+  //           checked={isSelected(row.model_id)}
+  //         />
+  //       </TableCell>
+  //       {columns.slice(1).map((column, index) => (
+  //         <TableCell
+  //           key={column.dataKey}
+  //           align={column.numeric || false ? 'right' : 'left'}
+  //           style={{ width: column.width }}
+  //         >
+  //           <Box width={column.width}>
+  //             {row[column.dataKey]}
+  //           </Box>
+  //         </TableCell>
+  //       ))}
+  //       <TableCell padding="checkbox" style={{ width: columns[columns.length - 1].width }}>
+  //         <IconButton
+  //           aria-label="expand row"
+  //           size="small"
+  //           onClick={() => handleRowExpand(row.model_id)}
+  //         >
+  //           {isExpanded ? (
+  //             <KeyboardArrowUpIcon />
+  //           ) : (
+  //             <KeyboardArrowDownIcon />
+  //           )}
+  //         </IconButton>
+  //       </TableCell>
+  //     </React.Fragment>
+  //   );
+  // }
+  
   return (
-    <Paper style={{ height: 400}}>
+    <Paper style={{ height: 500, width: 1400, margin:"auto"}}>
       <TableVirtuoso
         data={rows}
         fixedHeaderContent={fixedHeaderContent}

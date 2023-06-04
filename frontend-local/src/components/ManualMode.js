@@ -13,14 +13,14 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import CollapsibleTable from "./CollapsibleTable";
+import CollapsibleTable2 from "./CollapsibleTable2";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const predict_endpoint = 'https://inference-6r72er7ega-uc.a.run.app/predict';
-const unsupervised_endpoint = 'http://localhost:8000/unsupervised-train-suggest';
-const unsupervised_final_endpoint = 'http://localhost:8000/unsupervised-train-final';
-const supervised_endpoint = 'http://localhost:8000/manual-supervised-train';
-const save_endpoint = 'http://localhost:8000/save_models';
+const unsupervised_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/unsupervised-train-suggest';
+const unsupervised_final_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/unsupervised-train-final';
+const supervised_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/manual-supervised-train';
+const save_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/save_models';
 
 const Manual = () => {
   const [mode, setMode] = React.useState('user');
@@ -550,14 +550,14 @@ const Manual = () => {
             <br></br>
             {selectedAlgo == "gbm" && 
             <div className="hyperparam_options">
-              <Slider title={'ntrees'}  min={0} max={50} step={1} onSlidChange={handleSlidChange1} onStepChange={handleStepChange1}/>
-              <Slider title={'max_depth'}  min={0} max={50} step={1} onSlidChange={handleSlidChange2} onStepChange={handleStepChange2}/>
-              <Slider title={'learn_rate'}  min={0.0} max={0.5} step={0.01} onSlidChange={handleSlidChange3} onStepChange={handleStepChange3}/>
+              <Slider title={'ntrees'}  min1={0} max1={50} step1={1} min2={1} max2={49} step2={5} onSlidChange={handleSlidChange1} onStepChange={handleStepChange1}/>
+              <Slider title={'max_depth'}  min1={0} max1={50} step1={1} min2={1} max2={49} step2={5} onSlidChange={handleSlidChange2} onStepChange={handleStepChange2}/>
+              <Slider title={'learn_rate'}  min1={0.0} max1={0.5} step1={0.01} min2={0.01} max2={0.49} step2={0.01} onSlidChange={handleSlidChange3} onStepChange={handleStepChange3}/>
 
             </div>}
             <Button onClick={handleSubmit}  style={{ width: "200px", height: "50px", margin: "10px"}} color="primary" variant="contained" type="submit"><strong>TRAIN SUPERVISED</strong></Button>
         </form>
-        {response!=null && <CollapsibleTable response={response} onSelectChange={handleSelectedChange}></CollapsibleTable>}
+        {response!=null && <CollapsibleTable2 response={response} onSelectChange={handleSelectedChange}></CollapsibleTable2>}
       </div>}
       {mode === 'supervised' && trainLoading && (
         <div className={styles.loadingSection}>

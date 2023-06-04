@@ -17,24 +17,39 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
-import headerBackground from "../assets/header.png";
+import headerBackground from "../assets/header.jpg";
+import cobraLogo from "../assets/cobra-removebg-preview.png";
 import { makeStyles } from "@material-ui/core/styles";
+import { withTheme } from '@emotion/react';
 
 const useStyles = makeStyles((theme) => ({
   header: {
     backgroundImage: `url(${headerBackground})`,
   },
+  logo: {
+    backgroundImage: `url(${cobraLogo})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: 'contain',
+    filter: 'brightness(0) invert(1)',
+    width: '45px',
+    height: '45px',
+    marginRight: '1rem',
+    marginLeft: '2rem',
+    color: "white",
+    zIndex: 1,
+  },
 }));
 
-const pages = ['user', 'developer', 'manual', 'predict'];
+
+const pages = ['Domain-Expert', 'Data-Scientist', 'manual', 'predict'];
 
 const theme = createTheme({
   palette: {
-    user: {
+    'Domain-Expert': {
       // Purple and green play nicely together.
       main: '#00bcd4',
     },
-    developer: {
+    'Data-Scientist': {
       // This is green.A700 as hex.
       main: '#009688',
     },
@@ -51,7 +66,7 @@ const theme = createTheme({
 export default function App() {
   const classes = useStyles();
 
-  const [mode, setMode] = React.useState('user');
+  const [mode, setMode] = React.useState('Domain-Expert');
   const [anchorElNav, setAnchorElNav] = React.useState(null);
 
   const handleOpenNavMenu = (event) => {
@@ -68,7 +83,9 @@ export default function App() {
       <AppBar position="static" color='secondary' className={classes.header} >
       <Container maxWidth="xl">
       <Toolbar disableGutters>
-      <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+      <div className={classes.logo} sx={{ display: { xs: 'none', md: 'flex' }, marginRight: 1 }} />
+
+      {/* <AdbIcon className={classes.logo} sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} /> */}
       <Typography
             variant="h4"
             noWrap
@@ -80,39 +97,14 @@ export default function App() {
               fontFamily: 'monospace',
               fontWeight: 700,
               letterSpacing: '.3rem',
-              color: 'inherit',
+              color: 'white',
               textDecoration: 'none',
               margin: '10px',
             }}
           >
-            ModelLab
+            CobraLab
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-          {/* <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{
-                display: { xs: 'block', md: 'none' },
-              }}
-            >
-              {pages.map((page) => (
-                
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography textAlign="center" color='white'>{page}</Typography>
-                </MenuItem>
-              ))}
-            </Menu> */}
           </Box>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
@@ -132,8 +124,8 @@ export default function App() {
         </Container>
       </AppBar>
       </ThemeProvider>
-      {mode === 'user' && <UserMode />}
-      {mode === 'developer' && <DeveloperMode />}
+      {mode === 'Domain-Expert' && <UserMode />}
+      {mode === 'Data-Scientist' && <DeveloperMode />}
       {mode === 'manual' && <ManualMode />}
       {mode === 'predict' && <PredictMode />}
     </div>

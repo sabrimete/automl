@@ -10,9 +10,9 @@ const Input = styled(MuiInput)`
   width: 42px;
 `;
 
-export default function RangeSlider({title, min, max, step, onSlidChange, onStepChange}) {
-  const [value, setValue] = React.useState([10, 30]);
-  const [value1, setValue1] = React.useState('2');
+export default function RangeSlider({title, min1, max1, step1, min2, max2, step2, onSlidChange, onStepChange}) {
+  const [value, setValue] = React.useState([min1+step1, max1-step1]);
+  const [value1, setValue1] = React.useState(min2+step2);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -35,9 +35,9 @@ export default function RangeSlider({title, min, max, step, onSlidChange, onStep
       <Grid container spacing={2} alignItems="center">
       <Grid item xs>
       <Slider
-        min={min}
-        step={step}
-        max={max}
+        min={min1}
+        step={step1}
+        max={max1}
         getAriaLabel={() => 'Temperature range'}
         value={value}
         onChange={handleChange}
@@ -51,9 +51,10 @@ export default function RangeSlider({title, min, max, step, onSlidChange, onStep
         size="small"
         onChange={handleInputChange}
         inputProps={{
-          step: 1,
-          min: 0,
-          max: 3,
+          width: 2,
+          step: step2,
+          min: min2,
+          max: max2,
           type: 'number',
           'aria-labelledby': 'input-slider',
         }}

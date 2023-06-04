@@ -12,7 +12,7 @@ import Box from '@mui/material/Box';
 import { TableVirtuoso } from 'react-virtuoso';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-const one_model_endpoint = 'http://localhost:8000/run_info';
+const one_model_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/run_info';
 
 const theme = createTheme({
   palette: {

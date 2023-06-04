@@ -1,6 +1,28 @@
 // Leaderboard.js
 import React, { useState, useMemo } from 'react';
 import Button from '@mui/material/Button';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+const theme = createTheme({
+  palette: {
+    user: {
+      // Purple and green play nicely together.
+      main: '#008394',
+    },
+    developer: {
+      // This is green.A700 as hex.
+      main: '#009688',
+    },
+    manual: {
+      // This is green.A700 as hex.
+      main: '#4caf50',
+    },
+    predict: {
+      main: '#618833',
+    },
+  },
+});
+
 const Leaderboard = ({ data, selectedModels, setSelectedModels, onSave }) => {
 
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
@@ -41,9 +63,9 @@ const Leaderboard = ({ data, selectedModels, setSelectedModels, onSave }) => {
     return dataCopy;
   }, [data, sortConfig]);
   return (
+    <ThemeProvider theme={theme}>
     <div>
       <table>
-        {/* Render table header */}
         <thead>
           <tr>
             <th>Select</th>
@@ -61,7 +83,7 @@ const Leaderboard = ({ data, selectedModels, setSelectedModels, onSave }) => {
           {Array.isArray(sortedData) &&
             sortedData.map((model, index) => (
               console.log(model),
-              <tr key={model.model_id}>
+              <tr key={model.model_id} style={{ backgroundColor: index % 2 === 0 ? '#f2f2f2' : 'white' }} >
                 <td>
                   <input
                     type="checkbox"
@@ -81,8 +103,9 @@ const Leaderboard = ({ data, selectedModels, setSelectedModels, onSave }) => {
             ))}
         </tbody>
       </table>
-      <Button onClick={onSave} style={{ width: "300px", height: "50px", margin: "10px"}} color="info" variant="contained" type="submit"><strong>Save Selected Models</strong></Button>
+      <Button onClick={onSave} style={{ width: "300px", height: "50px", margin: "10px", color: "white"}} color="user" variant="contained" type="submit"><strong>Save Selected Models</strong></Button>
     </div>
+    </ThemeProvider>
   );
 };
 

@@ -277,18 +277,6 @@ const Developer = () => {
     );
   };
 
-  // const handleAlgoSelectChange = (e) => {
-  //   const options = e.target.options;
-  //   const selected = [];
-  //   for (let i = 0; i < options.length; i++) {
-  //     if (options[i].selected) {
-  //       selected.push(options[i].value);
-  //     }
-  //   }
-  //   setSelectedAlgos(selected);
-  // };
-
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setTrainLoading(true);
@@ -395,13 +383,6 @@ const Developer = () => {
           <strong> Choose Your Train File</strong> <br></br>
         <TextField id="filled-basic" color="developer" type="file" variant="filled" onChange={(e) => handleTrainFileChange(e)}  />
         </Box>
-        {/* <label htmlFor="trainFile"> <strong>Choose Your Train File  </strong></label>
-        <input
-          type="file"
-          id="trainFile"
-          name="trainFile"
-          onChange={(e) => handleTrainFileChange          (e)}
-          /> */}
           <label htmlFor="targetString">
             {columnNames.length > 0
               ? <strong>Select the target column </strong>
@@ -444,14 +425,6 @@ const Developer = () => {
             >
             <TextField id="outlined-number" color="developer" label="Max Runtime Secs" type="number" variant="outlined" onChange={(e) => handleMaxRuntimeSecsChange(e)}  />
             </Box>
-            {/* <label htmlFor="maxRuntimeSecs">Max Runtime Secs</label> <input
-            placeholder="Default is 3600"
-            type="number"
-            id="maxRuntimeSecs"
-            name="maxRuntimeSecs"
-            value={maxRuntimeSecs}
-            onChange={(e) => handleMaxRuntimeSecsChange(e)} />
-            <br></br> */}
             <Box
               component="form"
               sx={{
@@ -462,15 +435,6 @@ const Developer = () => {
             >
             <TextField id="outlined-number" color="developer" label="Max Models" type="number" variant="outlined" onChange={(e) => handleMaxModelsChange(e)}/>
             </Box>
-            {/* <label htmlFor="maxModels">Max Models </label>
-            <input
-              placeholder="Default is None"
-              type="number"
-              id="maxModels"
-              name="maxModels"
-              value={maxModels}
-              onChange={(e) => handleMaxModelsChange(e)}
-            /> */}
             <Box
               component="form"
               sx={{
@@ -481,24 +445,6 @@ const Developer = () => {
             >
             <TextField id="outlined-number" color="developer" label="nFolds" type="number" variant="outlined" onChange={(e) => handleNfoldsChange(e)}/>
             </Box>
-            {/* <label htmlFor="nfolds">Nfolds </label>
-            <input
-              placeholder="Default is -1"
-              type="number"
-              id="nfolds"
-              name="nfolds"
-              value={nfolds}
-              onChange={(e) => handleNfoldsChange(e)}
-            /> */}
-            {/* <label htmlFor="seed">Seed </label>
-            <input
-              placeholder="Default is None"
-              type="number"
-              id="seed"
-              name="seed"
-              value={seed}
-              onChange={(e) => handleSeedChange(e)}
-            /> */}
             <Box
               component="form"
               sx={{
@@ -540,15 +486,6 @@ const Developer = () => {
                 </Select>
               </FormControl>
             </Box>
-            {/* <label htmlFor="algos">Algorithms </label>
-            <select multiple name="algos" id="algos" onChange={handleAlgoSelectChange}>
-              <option value="GLM">GLM</option>
-              <option value="DeepLearning">DeepLearning</option>
-              <option value="DRF">DRF</option>
-              <option value="GBM">GBM</option>
-              <option value="XGBoost">XGBoost</option>
-              <option value="StackedEnsemble">StackedEnsemble</option>
-            </select> */}
             <br></br>
             </div>
             <Button style={{ width: "100px", height: "50px", margin: "10px"}} color="success" variant="contained" type="submit"><strong>Train</strong></Button>
