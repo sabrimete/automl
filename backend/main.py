@@ -107,6 +107,8 @@ async def save_models(model_ids: list[str] = Body(...), train_file_name: str = B
                     try:
                         temp_metric = getattr(model, metric)()
                         if isinstance(temp_metric, (float,int)):
+                            if(np.isnan(temp_metric) or np.isinf(temp_metric) or np.isneginf(temp_metric)):
+                                temp_metric = None
                             metrics[metric] = temp_metric
                     except Exception:
                         pass
