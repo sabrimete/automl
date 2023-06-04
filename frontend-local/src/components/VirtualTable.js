@@ -125,7 +125,7 @@ export default function ReactVirtualizedTable() {
     }, [all_models_endpoint]);
   
     return (
-      <Paper style={{ height: 400, width: 800}}>
+      <Paper elevation={7} style={{display: 'inline-block', height: 400, width: 800}}>
         <TableVirtuoso
           data={data}
           components={VirtuosoTableComponents}

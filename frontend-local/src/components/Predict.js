@@ -257,7 +257,7 @@ const User = () => {
         <form onSubmit={getAllModels}>
         <strong> Get Information of the Models: </strong> <br />
         <Button style={{ width: "250px", height: "50px", color:"white", margin: "10px"}} color="predict" variant="contained" type="submit"><strong>Get All Models</strong></Button>
-        <div id="responseContainer">
+        <div className={styles.responseContainer}>
           { allModels && <ReactVirtualizedTable/>}
         </div>
         </form>
@@ -281,6 +281,7 @@ const User = () => {
         <br />
         <br />
         <br />
+        <div>
         <form onSubmit={handlePredictSubmit}>
           <label htmlFor="predictFile"> <strong> Choose Your Test File: </strong></label>
           <input
@@ -302,6 +303,7 @@ const User = () => {
           
         <Button style={{ width: "300px", height: "50px", color:"white", margin: "10px"}} color="predict" variant="contained" type="submit"><strong>Predict by This Model</strong></Button>
         </form>
+        </div>
         {predictLoading && (
         <div className={styles.loadingSection}>
           <PropagateLoader color="#7b1fa2" size={50} />

@@ -5,6 +5,7 @@
   color: #008394;
   text-align: center;
 }
+
 .predictSection>h2 {
   margin-top: auto;
   font-size: 48px !important;
@@ -14,10 +15,9 @@
 }
 
 .AutoMLPipeline__container {
-  background: linear-gradient(350deg, #FFF 50%, #33c9dc 95%) ;
+  background: linear-gradient(350deg, #FFF 50%, #33c9dc 95%);
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  
 }
 
 .AutoMLPipeline__input-label {
@@ -55,7 +55,7 @@
   background-color: #FFA500;
 }
 
-.AutoMLPipeline__file-input input[type="file"]:focus + .file-input-label {
+.AutoMLPipeline__file-input input[type="file"]:focus+.file-input-label {
   box-shadow: 0 0 0 2px #FFBB00;
 }
 
@@ -101,48 +101,48 @@
 .AutoMLPipeline__spinner {
   border: 4px solid rgba(255, 255, 255, 0.1);
   width: 36px;
- 
-height: 36px;
-border-radius: 50%;
-border-left-color: #3F3F3F;
-animation: spin 1s linear infinite;
-margin-right: 16px;
+  height: 36px;
+  border-radius: 50%;
+  border-left-color: #3F3F3F;
+  animation: spin 1s linear infinite;
+  margin-right: 16px;
 }
 
 table {
-border-collapse: collapse;
-width: 100%;
+  border-collapse: collapse;
+  width: 100%;
 }
 
-th, td {
-border: 1px solid #ddd;
-padding: 8px;
-text-align: left;
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
 }
 
 th {
-background-color: #f2f2f2;
-font-weight: bold;
+  background-color: #f2f2f2;
+  font-weight: bold;
 }
 
 tbody tr:nth-child(even) {
-background-color: #f8f8f8;
+  background-color: #f8f8f8;
 }
 
 tbody tr:hover {
-background-color: #eaeaea;
+  background-color: #eaeaea;
 }
 
 @keyframes spin {
-0% {
-transform: rotate(0deg);
-}
-100% {
-transform: rotate(360deg);
-}
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
-.loadingSection{
+.loadingSection {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -166,7 +166,7 @@ transform: rotate(360deg);
 }
 
 .highlight {
-  background-color: #ed6f66 !important; 
+  background-color: #ed6f66 !important;
 }
 
 .heatmapContainer {
@@ -186,7 +186,38 @@ transform: rotate(360deg);
 
 .predictForm {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-evenly;
   background-color: #FFFFFF;
   border-radius: 5px;
+}
+
+/* Mobile Responsive Styles */
+@media only screen and (max-width: 600px) {
+  .trainSection>h2 {
+    font-size: 32px !important;
+  }
+
+  .predictSection>h2 {
+    font-size: 32px !important;
+  }
+
+  .navbar {
+    margin: 10px;
+  }
+
+  .predictForm {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .AutoMLPipeline__file-input-label,
+  .AutoMLPipeline__submit-button {
+    padding: 10px 20px;
+  }
+
+  .AutoMLPipeline__input-field,
+  .AutoMLPipeline__file-input {
+    margin-bottom: 10px;
+  }
 }
