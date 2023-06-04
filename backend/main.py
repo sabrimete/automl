@@ -61,7 +61,7 @@ def increment_array_int(first, last, increment):
 
 
 def increment_array_float(first, last, increment):
-    if first is None or last is None or increment is None or int(increment) <= 0:
+    if first is None or last is None or increment is None or float(increment) <= 0:
         return None
     first = float(first)
     last = float(last)
