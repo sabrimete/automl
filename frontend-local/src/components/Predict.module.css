@@ -1,0 +1,277 @@
+.trainSection>h2 {
+  background: linear-gradient(360deg, #FFF 10%, #e5b9ed 100%) ;
+  font-size: 48px !important;
+  margin-top: auto;
+  font-weight: bold;
+  color: #486f27;
+  text-align: center;
+}
+.predictSection>h2 {
+  font-size: 48px !important;
+  margin-top: auto;
+  font-weight: bold;
+  color: #486f27;
+  text-align: center;
+}
+
+.AutoMLPipeline__container {
+  background: linear-gradient(350deg, #FFF 50%, #a2cf6e 95%) ;
+  margin-top: auto;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+}
+
+.AutoMLPipeline__input-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 16px;
+  color: #3F3F3F;
+}
+
+.AutoMLPipeline__file-input {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.AutoMLPipeline__file-input input[type="file"] {
+  display: none;
+}
+
+.AutoMLPipeline__file-input-label {
+  display: block;
+  padding: 8px 12px;
+  background-color: #FFBB00;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.AutoMLPipeline__file-input-label:hover {
+  background-color: #FFCC33;
+}
+
+.AutoMLPipeline__file-input-label:active {
+  background-color: #FFA500;
+}
+
+.AutoMLPipeline__file-input input[type="file"]:focus + .file-input-label {
+  box-shadow: 0 0 0 2px #FFBB00;
+}
+
+.AutoMLPipeline__input-field {
+  display: block;
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  border: none;
+  background-color: #F5F5F5;
+  border-radius: 5px;
+  font-size: 16px;
+  color: #333333;
+}
+
+.AutoMLPipeline__submit-button {
+  display: block;
+  margin-top: 24px;
+  padding: 12px 24px;
+  background-color: #3F3F3F;
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.AutoMLPipeline__submit-button:hover {
+  background-color: #4F4F4F;
+}
+
+.AutoMLPipeline__submit-button:active {
+  background-color: #2F2F2F;
+}
+
+.AutoMLPipeline__status {
+  margin-top: 24px;
+  font-size: 16px;
+}
+
+.AutoMLPipeline__spinner {
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  width: 36px;
+ 
+height: 36px;
+border-radius: 50%;
+border-left-color: #3F3F3F;
+animation: spin 1s linear infinite;
+margin-right: 16px;
+}
+
+table {
+border-collapse: collapse;
+width: 100%;
+}
+
+th, td {
+border: 1px solid #ddd;
+padding: 8px;
+text-align: left;
+}
+
+th {
+background-color: #f2f2f2;
+font-weight: bold;
+}
+
+tbody tr:nth-child(even) {
+background-color: #f8f8f8;
+}
+
+tbody tr:hover {
+background-color: #eaeaea;
+}
+
+@keyframes spin {
+0% {
+transform: rotate(0deg);
+}
+100% {
+transform: rotate(360deg);
+}
+}
+
+.loadingSection{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.leaderboardContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
+  margin-left: 10px;
+}
+
+.highlight {
+  background-color: #ed6f66 !important; 
+}
+
+.heatmapContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.navbar {
+  margin: 30px 30px;
+  background-color: #FFFFFF;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.predictForm {
+  display: flex;
+  justify-content: space-evenly;
+  border-radius: 5px;
+}
+
+.ReactVirtualized__Table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.ReactVirtualized__Table__Grid {
+  outline: none;
+}
+
+.ReactVirtualized__Table__headerRow,
+.ReactVirtualized__Table__row {
+  display: flex;
+  width: auto !important;
+}
+
+.ReactVirtualized__Table__headerRow {
+  font-weight: bold;
+}
+
+.ReactVirtualized__Table__row {
+  cursor: default;
+}
+
+.ReactVirtualized__Table__rowColumn {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+}
+
+.ReactVirtualized__Table__headerTruncatedText,
+.ReactVirtualized__Table__rowTruncatedText {
+  overflow: visible;
+}
+
+@media (max-width: 767px) {
+  .ReactVirtualized__Table__Grid {
+    overflow-x: auto !important;
+  }
+}
+
+
+@media only screen and (max-width: 767px) {
+  .trainSection>h2 {
+    font-size: 32px !important;
+  }
+
+  .predictSection>h2 {
+    font-size: 32px !important;
+  }
+
+  .AutoMLPipeline__container {
+    margin: 10px;
+  }
+
+  .AutoMLPipeline__file-input-label,
+  .AutoMLPipeline__submit-button {
+    padding: 10px 20px;
+  }
+
+  .AutoMLPipeline__input-field,
+  .AutoMLPipeline__file-input {
+    margin-bottom: 10px;
+  }
+  .predictSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .predictForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .predictForm form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  
+}
