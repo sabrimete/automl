@@ -86,11 +86,15 @@ export default function OneTable({modelId}) {
           });
     
           const data = await response.json();
-          const parsedJSON = JSON.parse(data);
+          const jsonString = JSON.stringify(data);
+          const sanitizedData = jsonString.replace(/'/g, '"').replace(/NaN/g, " ");
+          const parsedJSON = JSON.parse(sanitizedData);
+          
           const infoArray = Object.entries(parsedJSON.info);
           const metricsArray = Object.entries(parsedJSON.data.metrics);
           const paramsArray = Object.entries(parsedJSON.data.params);
           const tagsArray = Object.entries(parsedJSON.data.tags);
+          console.log('info',infoArray);
           const infos = [];
           for (let index = 0; index < infoArray.length; index++) {
             const item = infoArray[index];

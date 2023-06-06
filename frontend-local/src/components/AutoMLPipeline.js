@@ -8,19 +8,21 @@ import styles from './AutoMLPipeline.module.css';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import AppBar from '@mui/material/AppBar';
+import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
-import Container from '@mui/material/Container';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import headerBackground from "../assets/header2.jpg";
 import cobraLogo from "../assets/cobra-removebg-preview.png";
 import { makeStyles } from "@material-ui/core/styles";
 import { withTheme } from '@emotion/react';
+
+
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -84,14 +86,12 @@ export default function App() {
   };
 
   return (
-    <div>
+<div>
       <ThemeProvider theme={theme}>
       <AppBar position="static" color='secondary' className={classes.header} >
       <Container maxWidth="xl">
       <Toolbar disableGutters>
       <div className={classes.logo} sx={{ display: { xs: 'none', md: 'flex' }, marginRight: 1 }} />
-
-      {/* <AdbIcon className={classes.logo} sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} /> */}
       <Typography
             variant="h4"
             noWrap
@@ -110,8 +110,6 @@ export default function App() {
           >
             CobraLab
           </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-          </Box>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
               <Button

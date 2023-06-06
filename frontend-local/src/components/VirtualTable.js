@@ -108,7 +108,7 @@ export default function ReactVirtualizedTable() {
       .then(response => response.json())
       .then(response => {
         console.log(typeof response);
-        const formattedString = response.replace(/'/g, '"').replace(/NaN/g, "null");; // Replaces single quotes with double quotes
+        const formattedString = response.replace(/'/g, '"').replace(/NaN/g, "null"); // Replaces single quotes with double quotes
 
         const array = JSON.parse(formattedString);
         const rows = [];
