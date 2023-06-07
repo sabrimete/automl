@@ -236,7 +236,7 @@ const Developer = () => {
     // Extract the column names
     const parsedData = Papa.parse(fileContent, { header: true });
     const firstLine = fileContent.split("\n")[0];
-    const columns = firstLine.split(",");
+    const columns = firstLine.split(",").map((col) => col.trim());
 
     // Update the column names state
     setColumnNames(columns);
