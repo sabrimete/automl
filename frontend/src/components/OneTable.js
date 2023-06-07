@@ -86,9 +86,11 @@ export default function OneTable({modelId}) {
           });
     
           const data = await response.json();
-          const jsonString = JSON.stringify(data);
-          const sanitizedData = jsonString.replace(/'/g, '"').replace(/NaN/g, " ");
-          const parsedJSON = JSON.parse(sanitizedData);
+          console.log(data);
+          // const jsonString = JSON.stringify(data);
+          // const sanitizedData = jsonString.replace(/'/g, '"').replace(/NaN/g, " ");
+          const parsedJSON = JSON.parse(data);
+          console.log(parsedJSON.info)
           
           const infoArray = Object.entries(parsedJSON.info);
           const metricsArray = Object.entries(parsedJSON.data.metrics);

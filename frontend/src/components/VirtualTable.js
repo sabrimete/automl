@@ -72,11 +72,9 @@ function fixedHeaderContent() {
 
 function rowContent(_index, row) {
   const timestamp = new Date(row.timestamp * 1000)
-  console.log(timestamp);
   const day = String(timestamp.getDate()).padStart(2, '0');
   const month = String(timestamp.getMonth() + 1).padStart(2, '0'); // Month is zero-based
   const year = timestamp.getFullYear();
-  console.log(day,month,year);
 
   // Extract the time components
   let hours = timestamp.getHours();
@@ -85,7 +83,6 @@ function rowContent(_index, row) {
 
   // Construct the formatted timestamp
   const formattedTimestamp = `${day}/${month}/${year}, ${time}`;
-  console.log(formattedTimestamp);
   return (
     <React.Fragment>
       {columns.map((column) => (
@@ -107,7 +104,6 @@ export default function ReactVirtualizedTable() {
       fetch(all_models_endpoint)
       .then(response => response.json())
       .then(response => {
-        console.log(typeof response);
         const formattedString = response.replace(/'/g, '"').replace(/NaN/g, "null"); // Replaces single quotes with double quotes
 
         const array = JSON.parse(formattedString);
