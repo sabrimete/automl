@@ -29,7 +29,7 @@ const theme = createTheme({
   },
 });
 
-const train_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/train';
+const train_endpoint = 'http://localhost:8000/train';
 const save_endpoint = 'https://backend-6r72er7ega-uc.a.run.app/save_models';
 
 const User = () => {
@@ -122,6 +122,7 @@ const User = () => {
 
   const handleTargetStringChange = (e) => {
     setTargetString(e.target.value);
+    console.log(targetString);
   };
   
   const handleSubmit = async (e) => {

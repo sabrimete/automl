@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-const pages = ['Domain-Expert', 'Data-Scientist', 'manual', 'predict'];
+const pages = ['Domain-Expert', 'Data-Scientist', 'Manual', 'Predict'];
 
 const theme = createTheme({
   palette: {
@@ -61,11 +61,11 @@ const theme = createTheme({
       // This is green.A700 as hex.
       main: '#009688',
     },
-    manual: {
+    'Manual': {
       // This is green.A700 as hex.
       main: '#4caf50',
     },
-    predict: {
+    'Predict': {
       main: '#8bc34a',
     },
   },
@@ -110,7 +110,8 @@ export default function App() {
           >
             CobraLab
           </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          {/* <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+            
             {pages.map((page) => (
               <Button
                 key={page}
@@ -123,6 +124,73 @@ export default function App() {
               </Button>
             ))}
             
+          </Box> */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleOpenNavMenu}
+              color="inherit"
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorElNav}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+              open={Boolean(anchorElNav)}
+              onClose={handleCloseNavMenu}
+              sx={{
+                display: { xs: 'block', md: 'none' },
+              }}
+            >
+              {pages.map((page) => (
+                <MenuItem key={page} onClick={() => setMode(page)}>
+                  <Typography textAlign="center">{page}</Typography>
+                </MenuItem>
+              ))}
+            </Menu>
+          </Box>
+          <Typography
+            variant="h5"
+            noWrap
+            component="a"
+            href=""
+            sx={{
+              mr: 2,
+              display: { xs: 'flex', md: 'none' },
+              flexGrow: 1,
+              fontFamily: 'monospace',
+              fontWeight: 700,
+              letterSpacing: '.3rem',
+              color: 'inherit',
+              textDecoration: 'none',
+            }}
+          >
+            CobraLab
+          </Typography>
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+            {pages.map((page) => (
+              <Button
+                key={page}
+                onClick={() => setMode(page)}
+                color={page}
+                variant="contained"
+                sx={{ my: 2, color: 'white', margin: 1,  display: 'block' }}
+              >
+                {page}
+              </Button>
+            ))}
           </Box>
         </Toolbar>
         </Container>
@@ -130,8 +198,8 @@ export default function App() {
       </ThemeProvider>
       {mode === 'Domain-Expert' && <UserMode />}
       {mode === 'Data-Scientist' && <DeveloperMode />}
-      {mode === 'manual' && <ManualMode />}
-      {mode === 'predict' && <PredictMode />}
+      {mode === 'Manual' && <ManualMode />}
+      {mode === 'Predict' && <PredictMode />}
     </div>
   );
 }
